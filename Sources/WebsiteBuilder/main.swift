@@ -6,6 +6,7 @@ func main() throws {
     // Configuration
     let inputDirectory = URL(fileURLWithPath: "src")
     let outputDirectory = URL(fileURLWithPath: "out")
+    let templateDirectory = URL(fileURLWithPath: "template")
 
     // Clear the output directory
     try? FileManager.default.removeItem(at: outputDirectory)
@@ -19,9 +20,10 @@ func main() throws {
 
     // Create page processing pipeline
     var pipeline = Pipeline(toProcess: outputDirectory)
-    try pipeline.append(SyntaxHighlightingPlugin(configuration: .init(theme: "monokai")))
+    try pipeline.append(SyntaxHighlightingPlugin(configuration: .init(theme: "atom-one-dark")))
     try pipeline.append(GitHubMarkdownThemePlugin(configuration: .init(theme: .light)))
     try pipeline.append(HeadingIDPlugin())
+    try pipeline.append(PageTemplatePlugin(configuration: .init(templateDirectory: templateDirectory)))
 
     // Processes the files in the output directory
     try pipeline.processDirectory(outputDirectory)
