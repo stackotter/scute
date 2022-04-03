@@ -2,20 +2,33 @@ import Foundation
 import Parsley
 import Parsing
 
-let theme = "monokai"
-let inputFile = URL(fileURLWithPath: "test.md")
-let outputFile = URL(fileURLWithPath: "output.html")
+func main() throws {
+    // Configuration
+    let inputDirectory = URL(fileURLWithPath: "src")
+    let outputDirectory = URL(fileURLWithPath: "out")
 
-var pipeline = Pipeline()
-pipeline.append(SyntaxHighlightingPlugin(context: .init(theme: theme)))
-pipeline.append(HeadingIDPlugin())
+    // Clear the output directory
+    try? FileManager.default.removeItem(at: outputDirectory)
+
+    // Copy the input files to the output directory
+    try FileManager.default.copyItem(at: inputDirectory, to: outputDirectory)
+
+    // TODO: make a better way of doing this
+    try FileManager.default.createDirectory(at: outputDirectory.appendingPathComponent("css"), withIntermediateDirectories: true)
+    try FileManager.default.createDirectory(at: outputDirectory.appendingPathComponent("js"), withIntermediateDirectories: true)
+
+    // Create page processing pipeline
+    var pipeline = Pipeline(toProcess: outputDirectory)
+    try pipeline.append(SyntaxHighlightingPlugin(configuration: .init(theme: "monokai")))
+    try pipeline.append(GitHubMarkdownThemePlugin(configuration: .init(theme: .light)))
+    try pipeline.append(HeadingIDPlugin())
+
+    // Processes the files in the output directory
+    try pipeline.processDirectory(outputDirectory)
+}
 
 do {
-    var article = try Article.fromMarkdownFile(at: inputFile)
-
-    try pipeline.process(&article)
-
-    try article.html.write(to: outputFile, atomically: false, encoding: .utf8)
+    try main()
 } catch {
     print("Error: \(error)")
 }

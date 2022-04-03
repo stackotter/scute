@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug WebsiteBuilder",
+            "program": "${workspaceFolder:WebsiteBuilder}/.build/debug/WebsiteBuilder",
+            "args": [],
+            "cwd": "${workspaceFolder:WebsiteBuilder}",
+            "preLaunchTask": "swift: Build Debug WebsiteBuilder"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Release WebsiteBuilder",
+            "program": "${workspaceFolder:WebsiteBuilder}/.build/release/WebsiteBuilder",
+            "args": [],
+            "cwd": "${workspaceFolder:WebsiteBuilder}",
+            "preLaunchTask": "swift: Build Release WebsiteBuilder"
+        }
+    ]
+}

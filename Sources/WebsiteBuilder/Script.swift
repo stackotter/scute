@@ -1,12 +1,12 @@
 enum Script {
-    case hosted(url: String)
-    case inline(contents: String)
+    case externalScript(url: String)
+    case internalScript(contents: String)
 
     var html: String {
         switch self {
-            case .hosted(let url):
+            case .externalScript(let url):
                 return #"<script src="\#(url)"></script>"#
-            case .inline(let content):
+            case .internalScript(let content):
                 return #"<script>\#(content)</script>"#
         }
     }

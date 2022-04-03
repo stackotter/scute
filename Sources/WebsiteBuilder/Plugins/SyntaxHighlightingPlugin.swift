@@ -1,23 +1,42 @@
 import Foundation
 
 struct SyntaxHighlightingPlugin: Plugin {
-    let context: Context
+    let configuration: Configuration
 
-    struct Context {
+    struct Configuration {
         var theme: String
     }
 
-    func process(_ article: inout Article) throws {
-        let themeURL = URL(string: "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/\(context.theme).min.css")!
+    struct Context {
+        var highlightJSFilePath: String
+        var themeCSSFilePath: String
+        var additionalStyles: String
+    }
 
-        let themeCSS = try String(contentsOf: themeURL)
-        let document = try CSS.parseDocument(themeCSS).unwrap()
+    func setup(in directory: URL) throws -> Context {
+        // Download highlight.min.js
+        let highlightJSURL = URL(string: "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js")!
+        let highlightJSFilePath = "/js/highlight.min.js"
+        let highlightJSFile = directory.appendingPathComponent(highlightJSFilePath)
+        try String(contentsOf: highlightJSURL).write(to: highlightJSFile, atomically: false, encoding: .utf8)
+
+        // Download theme
+        let themeURL = URL(string: "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/\(configuration.theme).min.css")!
+        let cssFilePath = "/css/syntax-theme_\(configuration.theme).min.css"
+        let cssFile = directory.appendingPathComponent(cssFilePath)
+        let css = try String(contentsOf: themeURL)
+        try css.write(to: cssFile, atomically: false, encoding: .utf8)
+
+        // Get the theme's background color
+        let blocks = try CSS.parseDocument(css).unwrap().blocks
 
         guard
-            let hljsBlock = document.blocks.filter({ $0.selector == ".hljs" }).first,
-            let backgroundRule = hljsBlock.rules
-                .filter({ $0.property == "background" || $0.property == "background-color" })
-                .first
+            let hljsBlock = blocks.filter({ (block: CSS.Block) -> Bool in
+                block.selector == ".hljs"
+            }).first,
+            let backgroundRule = hljsBlock.rules.filter({ (rule: CSS.Rule) -> Bool in
+                rule.property == "background" || rule.property == "background-color"
+            }).first
         else {
             print("Failed to get theme background color")
             Foundation.exit(1)
@@ -25,7 +44,7 @@ struct SyntaxHighlightingPlugin: Plugin {
 
         let themeBackgroundColor = backgroundRule.value
 
-        let stylesheet = """
+        let additionalStyles = """
 pre code.hljs {
     padding: 0 !important;
 }
@@ -36,14 +55,22 @@ pre code.hljs {
 }
 """
 
-        article.styleSheets += [
-            .hosted(url: "./github-markdown-light.css"),
-            .hosted(url: "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/\(context.theme).min.css"),
-            .inline(content: stylesheet)
+        // Return the context used to process individual pages
+        return Context(
+            highlightJSFilePath: highlightJSFilePath,
+            themeCSSFilePath: cssFilePath,
+            additionalStyles: additionalStyles
+        )
+    }
+
+    func process(_ page: inout Page, _ context: Context) throws {
+        page.styleSheets += [
+            .externalSheet(url: context.themeCSSFilePath),
+            .internalSheet(content: context.additionalStyles)
         ]
-        article.scripts += [
-            .hosted(url: "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"),
-            .inline(contents: "hljs.highlightAll();")
+        page.scripts += [
+            .externalScript(url: context.highlightJSFilePath),
+            .internalScript(contents: "hljs.highlightAll();")
         ]
     }
 }
