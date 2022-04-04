@@ -12,10 +12,10 @@
     {
       "identity" : "parsley",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/loopwerk/Parsley",
+      "location" : "https://github.com/stackotter/Parsley",
       "state" : {
-        "revision" : "10da1efa3ea278a4828b8c87fd430bdfa326ffbc",
-        "version" : "0.8.0"
+        "branch" : "custom-extensions",
+        "revision" : "6535cb9821833bddda6b200731dc54429ecc2a8c"
       }
     },
     {

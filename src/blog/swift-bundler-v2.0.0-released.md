@@ -14,6 +14,8 @@ For those interested, here's [a link to the release notes on GitHub](https://git
 - [License change](#license-change)
 - [Conclusion](#conclusion)
 
+@TableOfContents{depth=2}@
+
 ## Updating ✨
 
 Updating to Swift Bundler v2.0.0 is extremely simple. Just run the following command.
