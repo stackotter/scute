@@ -8,13 +8,13 @@ For those interested, here's [a link to the release notes on GitHub](https://git
 
 ## Overview
 
-- [Updating](#user-content-updating)
-- [User-facing changes](#user-content-user-facing-changes)
-- [Internal changes](#user-content-internal-changes)
-- [License change](#user-content-license-change)
-- [Conclusion](#user-content-conclusion)
+- [Updating](#updating)
+- [User-facing changes](#user-facing-changes)
+- [Internal changes](#internal-changes)
+- [License change](#license-change)
+- [Conclusion](#conclusion)
 
-<h2 id="updating">Updating ✨</h2>
+## Updating ✨
 
 Updating to Swift Bundler v2.0.0 is extremely simple. Just run the following command.
 
@@ -32,7 +32,7 @@ After updating to v2.0.0, the next step is migrating your existing projects.
 
 Swift Bundler is full of breaking changes, which means that any existing projects will need migrating. But don't stress, because when Swift Bundler detects a `Bundle.json` file it will automatically attempt to migrate it to the new configuration format. Migration will be triggered the next time you build or run your app. The migrated configuration will be located at `Bundler.toml`.
 
-<h2 id="user-facing-changes">User-facing changes 👨‍💻</h2>
+## User-facing changes 👨‍💻
 
 The biggest user-facing changes are; the addition of package templates, the new CLI, the new configuration format, the significantly more helpful error messages, and the [new documentation site](https://stackotter.github.io/swift-bundler/documentation/swiftbundler).
 
@@ -87,7 +87,7 @@ Thanks to v2.0.0's `Result`-based error handling and `LocalizedError` implementa
 
 The [new documentation site](https://stackotter.github.io/swift-bundler/documentation/swiftbundler/) was created using Swift's [docc](https://www.swift.org/documentation/docc/) tool. Once a public API is added to Swift Bundler, the site will also hold library documentation. The site is hosted on GitHub pages.
 
-<h2 id="internal-changes">Internal changes 🛠</h2>
+## Internal changes 🛠
 
 While rewriting Swift Bundler I decided to try out `Result`-based error handling along with some functional programming patterns. I am now very glad that I made that decision, because the result (no pun intended) was a highly maintainable and robust system with good separation of concerns and useful context for each possible error.
 
@@ -99,10 +99,10 @@ The appeal of `Result`-based error handling is that it forces each system to wra
 
 Swift Bundler uses functional programming in the sense that each system is just an enum (acting as a namespace) of static functions that are pure in a loose sense. I say 'a loose sense' because many of the functions rely on the state of the file system and use the logger to log information, but almost all other inputs and outputs are defined in the function signature.
 
-<h2 id="license-change">License change 📄</h2>
+## License change 📄
 
 To encourage a wider variety of use-cases, I have made the decision to change from GPL-v3.0 to the Apache-2.0 license. GPL-v3.0 is great at keeping all derivative works of a project open-source, which is why I love it, but this often makes GPL-v3.0 licensed tools and libraries notoriously difficult to use in corporate environments. Swift Bundler may not be production ready yet, but hopefully it will be in the near future, and I want people to be able to use it.
 
-<h2 id="conclusion">Conclusion</h2>
+## Conclusion
 
 The original version of Swift Bundler was basically just written for [Delta Client](https://github.com/stackotter/delta-client) (a personal project of mine), and it wasn't really flexible or mature enough for anyone else to use. I am very glad that I finally made the decision to rewrite it and turn it into a versatile tool for Xcode-less app creation. Hopefully in the near future I can find some time to bring Swift Bundler to Linux (and maybe even Windows) and get ever closer to the dream of cross-platform development with Swift.

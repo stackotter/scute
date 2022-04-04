@@ -23,13 +23,13 @@ enum Server {
             }
 
             // If the path corresponds to a non-html file, the file is returned
-            // If the path + '.html' corresponds to an html file, the html file is returned
+            // If the path + '.html' corresponds to an html file which isn't 'index.html', the html file is returned
             // If the path corresponds to a directory and 'index.html' exists within that directory, the 'index.html' file is returned
             // Otherwise, a file not found status code is returned
             let file = directory.appendingPathComponent(path)
             if file.lastPathExtension != "html" && FileManager.default.itemExists(at: file, withType: .file) {
                 return fileToResponse(file)
-            } else if file.lastPathExtension != "html" && FileManager.default.itemExists(at: file.appendingPathExtension("html"), withType: .file) {
+            } else if file.lastPathExtension != "html" && FileManager.default.itemExists(at: file.appendingPathExtension("html"), withType: .file) && file.lastPathComponent != "index" {
                 return fileToResponse(file.appendingPathExtension("html"))
             } else if FileManager.default.itemExists(at: file, withType: .directory) && FileManager.default.itemExists(at: file.appendingPathComponent("index.html"), withType: .file) {
                 return fileToResponse(file.appendingPathComponent("index.html"))
