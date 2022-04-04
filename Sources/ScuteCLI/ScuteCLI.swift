@@ -20,11 +20,16 @@ struct ScuteCLI {
         try FileManager.default.createDirectory(at: outputDirectory.appendingPathComponent("css"), withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: outputDirectory.appendingPathComponent("js"), withIntermediateDirectories: true)
 
+        // Setup modules
+        var moduleRendererConfiguration = ModuleRendererPlugin.Configuration()
+        moduleRendererConfiguration.addModule(TableOfContentsModule())
+
         // Create page processing pipeline
         var pipeline = Pipeline(toProcess: outputDirectory)
-        try pipeline.append(SyntaxHighlightingPlugin(configuration: .init(theme: "atom-one-dark")))
+        try pipeline.append(SyntaxHighlighterPlugin(configuration: .init(theme: "atom-one-dark")))
         try pipeline.append(GitHubMarkdownThemePlugin(configuration: .init(theme: .light)))
         try pipeline.append(HeadingIDPlugin())
+        try pipeline.append(ModuleRendererPlugin(configuration: moduleRendererConfiguration))
         try pipeline.append(PageTemplatePlugin(configuration: .init(templateDirectory: templateDirectory)))
 
         // Processes the files in the output directory

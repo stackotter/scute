@@ -1,6 +1,6 @@
 import Foundation
 
-public struct SyntaxHighlightingPlugin: Plugin {
+public struct SyntaxHighlighterPlugin: Plugin {
     public let configuration: Configuration
 
     public struct Configuration {
@@ -17,7 +17,7 @@ public struct SyntaxHighlightingPlugin: Plugin {
         public var additionalStyles: String
     }
 
-    public init(configuration: SyntaxHighlightingPlugin.Configuration) {
+    public init(configuration: SyntaxHighlighterPlugin.Configuration) {
         self.configuration = configuration
     }
 

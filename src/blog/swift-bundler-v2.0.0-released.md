@@ -8,13 +8,7 @@ For those interested, here's [a link to the release notes on GitHub](https://git
 
 ## Overview
 
-- [Updating](#updating)
-- [User-facing changes](#user-facing-changes)
-- [Internal changes](#internal-changes)
-- [License change](#license-change)
-- [Conclusion](#conclusion)
-
-@TableOfContents{depth=2}@
+@TableOfContents{"stripEmojis":true,"depth":2}@
 
 ## Updating ✨
 
