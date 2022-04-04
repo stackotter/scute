@@ -1,8 +1,7 @@
 import Foundation
-import FlyingFox
 
 @main
-enum Scute {
+struct Scute {
     static let inputDirectory = URL(fileURLWithPath: "src")
     static let outputDirectory = URL(fileURLWithPath: "out")
     static let templateDirectory = URL(fileURLWithPath: "template")
@@ -35,77 +34,30 @@ enum Scute {
     }
 
     static func main() async throws {
-        print("Building site")
-        try build()
-
-        // Quit the server on interrupt
+        // Quit the program on interrupt (the server sometimes doesn't like stopping)
         trap(.interrupt, action: { _ in
             Foundation.exit(1)
         })
 
-        final class Debouncer: @unchecked Sendable {
-            var latestEvent: FileSystemWatcher.EventID? = nil
-        }
+        // Build the site
+        print("Building site")
+        try build()
 
-        let debouncer = Debouncer()
-
-        let queue = DispatchQueue(label: "site-rebuilder")
-
+        // Rebuild site when any input files change
         print("Watching file system for changes")
-        try FileSystemWatcher.startWatching(paths: [inputDirectory.path, templateDirectory.path], with: { event in
-            if event.flags?.contains(.itemCloned) == true || event.flags?.contains(.historyDone) == true {
-                return
-            }
-
-            // Store the latest event id and then wait 200 milliseconds to debounce
-            queue.sync {
-                debouncer.latestEvent = event.id
-            }
-            queue.asyncAfter(deadline: .now() + .milliseconds(200)) {
-                if debouncer.latestEvent == event.id {
-                    do {
-                        print("Detected changes, rebuilding site")
-                        try build()
-                        print("Successfully rebuilt site")
-                    } catch {
-                        print("Failed to rebuild site")
-                    }
-                }
+        try FileSystemWatcher.startWatchingForDebouncedModifications(paths: [inputDirectory.path, templateDirectory.path], with: {
+            do {
+                print("Detected changes, rebuilding site")
+                try build()
+                print("Successfully rebuilt site")
+            } catch {
+                print("Failed to rebuild site: \(error)")
             }
         }, errorHandler: { error in
-            print("Error processing file system event: \(error)")
+            print("Error procssing file system event: \(error)")
         })
 
-        // Host a server
-        let server = HTTPServer(port: 80)
-        await server.appendRoute("GET *") { request in
-            func fileToResponse(_ file: URL) -> HTTPResponse {
-                do {
-                    let data = try Data(contentsOf: file)
-                    return HTTPResponse(version: .http11, statusCode: .ok, headers: [:], body: data)
-                } catch {
-                    return HTTPResponse(statusCode: .internalServerError)
-                }
-            }
-
-            // Attempt to avoid path traversal
-            let path = request.path
-            if path.contains("..") {
-                return HTTPResponse(statusCode: .notFound)
-            }
-
-            let file = outputDirectory.appendingPathComponent(path)
-            if file.pathExtension != "html" && FileManager.default.itemExists(at: file, withType: .file) {
-                return fileToResponse(file)
-            } else if file.pathExtension == "" && FileManager.default.itemExists(at: file.appendingPathExtension("html"), withType: .file) {
-                return fileToResponse(file.appendingPathExtension("html"))
-            } else if FileManager.default.itemExists(at: file, withType: .directory) && FileManager.default.itemExists(at: file.appendingPathComponent("index.html"), withType: .file) {
-                return fileToResponse(file.appendingPathComponent("index.html"))
-            }
-            return HTTPResponse(statusCode: .notFound)
-        }
-
-        print("Listening at http://127.0.0.1:80/")
-        try await server.start()
+        // Host the site
+        try await Server.host(outputDirectory, onPort: 80)
     }
 }

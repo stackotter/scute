@@ -3,25 +3,53 @@
 import Foundation
 import CoreServices
 
-var watcher: FileSystemWatcher.EventStream? = nil
-
 public struct FileSystemWatcher {
+    final class Debouncer: @unchecked Sendable {
+        var latestEvent: FileSystemWatcher.EventID? = nil
+    }
+
+    private static var streams: [FileSystemWatcher.EventStream] = []
+
     public static func startWatching(paths: [String], with handler: @escaping (FileSystemWatcher.Event) -> (), errorHandler: @escaping (Swift.Error) -> Void) throws {
-        assert(Thread.isMainThread)
+        try DispatchQueue.runOnMainThread {
+            let stream = try EventStream(
+                pathsToWatch: paths,
+                sinceWhen: .now,
+                latency: 0.5,
+                flags: [.noDefer, .fileEvents],
+                handler: handler,
+                errorHandler: errorHandler
+            )
 
-        let stream = try EventStream(
-            pathsToWatch: paths,
-            sinceWhen: .now,
-            latency: 0.5,
-            flags: [.noDefer, .fileEvents],
-            handler: handler,
-            errorHandler: errorHandler
-        )
+            stream.setDispatchQueue(DispatchQueue.main)
+            try stream.start()
 
-        stream.setDispatchQueue(DispatchQueue.main)
-        try stream.start()
+            streams.append(stream)
+        }
+    }
 
-        watcher = stream
+    public static func startWatchingForDebouncedModifications(paths: [String], with handler: @escaping () -> Void, errorHandler: @escaping (Swift.Error) -> Void) throws {
+        let debouncer = Debouncer()
+
+        let queue = DispatchQueue(label: "debounced-event-handler")
+
+        try startWatching(paths: paths, with: { event in
+            // Only handle modification events
+            if event.flags?.contains(.itemCloned) == true || event.flags?.contains(.historyDone) == true {
+                return
+            }
+
+            // Store the latest event id and then wait 200 milliseconds to debounce
+            queue.sync {
+                debouncer.latestEvent = event.id
+            }
+            
+            queue.asyncAfter(deadline: .now() + .milliseconds(200)) {
+                if debouncer.latestEvent == event.id {
+                    handler()
+                }
+            }
+        }, errorHandler: errorHandler)
     }
 }
 
