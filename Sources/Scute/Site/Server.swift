@@ -1,8 +1,8 @@
 import Foundation
 import FlyingFox
 
-enum Server {
-    static func host(_ directory: URL, onPort port: UInt16) async throws {
+public enum Server {
+    public static func host(_ directory: URL, onPort port: UInt16) async throws {
         // Host a server
         let server = HTTPServer(port: port)
 

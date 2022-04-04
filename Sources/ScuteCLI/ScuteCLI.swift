@@ -1,7 +1,8 @@
 import Foundation
+import Scute
 
 @main
-struct Scute {
+struct ScuteCLI {
     static let inputDirectory = URL(fileURLWithPath: "src")
     static let outputDirectory = URL(fileURLWithPath: "out")
     static let templateDirectory = URL(fileURLWithPath: "template")

@@ -1,8 +1,8 @@
-enum StyleSheet {
+public enum StyleSheet {
     case externalSheet(url: String)
     case internalSheet(content: String)
 
-    var html: String {
+    public var html: String {
         switch self {
             case .externalSheet(let url):
                 return #"<link rel="stylesheet" href="\#(url)"/>"#

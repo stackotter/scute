@@ -1,6 +1,6 @@
 import Foundation
 
-enum CSSError: LocalizedError {
+public enum CSSError: LocalizedError {
     case failedToRemoveComments(Error)
     case failedToParseDocument(Error)
 }

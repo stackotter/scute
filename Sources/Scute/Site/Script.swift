@@ -1,8 +1,8 @@
-enum Script {
+public enum Script {
     case externalScript(url: String)
     case internalScript(contents: String)
 
-    var html: String {
+    public var html: String {
         switch self {
             case .externalScript(let url):
                 return #"<script src="\#(url)"></script>"#

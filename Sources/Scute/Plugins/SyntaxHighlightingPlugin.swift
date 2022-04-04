@@ -1,19 +1,27 @@
 import Foundation
 
-struct SyntaxHighlightingPlugin: Plugin {
-    let configuration: Configuration
+public struct SyntaxHighlightingPlugin: Plugin {
+    public let configuration: Configuration
 
-    struct Configuration {
-        var theme: String
+    public struct Configuration {
+        public init(theme: String) {
+            self.theme = theme
+        }
+
+        public var theme: String
     }
 
-    struct Context {
-        var highlightJSFilePath: String
-        var themeCSSFilePath: String
-        var additionalStyles: String
+    public struct Context {
+        public var highlightJSFilePath: String
+        public var themeCSSFilePath: String
+        public var additionalStyles: String
     }
 
-    func setup(in directory: URL) throws -> Context {
+    public init(configuration: SyntaxHighlightingPlugin.Configuration) {
+        self.configuration = configuration
+    }
+
+    public func setup(in directory: URL) throws -> Context {
         // Download highlight.min.js
         let highlightJSURL = URL(string: "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js")!
         let highlightJSFilePath = "/js/highlight.min.js"
@@ -63,7 +71,7 @@ pre code.hljs {
         )
     }
 
-    func process(_ page: inout Page, _ context: Context) throws {
+    public func process(_ page: inout Page, _ context: Context) throws {
         page.styleSheets += [
             .externalSheet(url: context.themeCSSFilePath),
             .internalSheet(content: context.additionalStyles)

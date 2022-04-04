@@ -1,22 +1,22 @@
 import Foundation
 
-struct Pipeline {
-    let rootDirectory: URL
+public struct Pipeline {
+    public let rootDirectory: URL
 
     private var processors: [(inout Page) throws -> Void] = []
 
-    init(toProcess directory: URL) {
+    public init(toProcess directory: URL) {
         rootDirectory = directory
     }
 
-    mutating func append<T: Plugin>(_ plugin: T) throws {
+    public mutating func append<T: Plugin>(_ plugin: T) throws {
         let context = try plugin.setup(in: rootDirectory)
         processors.append({ page in
             try plugin.process(&page, context)
         })
     }
 
-    func processDirectory(_ directory: URL) throws {
+    public func processDirectory(_ directory: URL) throws {
         // Locate all markdown files
         guard let enumerator = FileManager.default.enumerator(at: directory, includingPropertiesForKeys: nil) else {
             print("Failed to enumerate markdown files")
@@ -38,13 +38,13 @@ struct Pipeline {
         }
     }
 
-    func process(_ page: inout Page) throws {
+    private func process(_ page: inout Page) throws {
         for processor in processors {
             try processor(&page)
         }
     }
 
-    func convertMarkdownFile(_ inputFile: URL, _ outputFile: URL) throws {
+    private func convertMarkdownFile(_ inputFile: URL, _ outputFile: URL) throws {
         var page = try Page.fromMarkdownFile(at: inputFile)
 
         try process(&page)

@@ -4,7 +4,7 @@ import Foundation
 import CoreServices
 
 public struct FileSystemWatcher {
-    final class Debouncer: @unchecked Sendable {
+    private final class Debouncer: @unchecked Sendable {
         var latestEvent: FileSystemWatcher.EventID? = nil
     }
 

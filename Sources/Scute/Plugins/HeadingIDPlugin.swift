@@ -1,10 +1,10 @@
 import SwiftSoup
 import Foundation
 
-struct HeadingIDPlugin: Plugin {
-    init() {}
+public struct HeadingIDPlugin: Plugin {
+    public init() {}
 
-    func process(_ page: inout Page, _ context: Void) throws {
+    public func process(_ page: inout Page, _ context: Void) throws {
         // TODO: handle naming collisions
 
         let document = try SwiftSoup.parse(page.content)

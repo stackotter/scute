@@ -1,9 +1,34 @@
 import Parsing
 
-extension CSS {
+public enum CSS {
+    public static func parseDocument(_ input: String) -> Result<Document, CSSError> {
+        return removeComments(from: input)
+            .flatMap { inputWithoutComments in
+                parseCommentlessDocument(inputWithoutComments)
+            }
+    }
+
+    private static func parseCommentlessDocument(_ input: String) -> Result<Document, CSSError> {
+        do {
+            let blocks: [Block] = try documentParser.parse(input)
+            return .success(Document(blocks: blocks))
+        } catch {
+            return .failure(.failedToParseDocument(error))
+        }
+    }
+
+    private static func removeComments(from input: String) -> Result<String, CSSError> {
+        do {
+            let inputWithoutComments = try commentRemovingParser.parse(input)
+            return .success(inputWithoutComments)
+        } catch {
+            return .failure(.failedToRemoveComments(error))
+        }
+    }
+
     // MARK: Document parsing
 
-    static let ruleParser = Parse {
+    private static let ruleParser = Parse {
         Prefix { $0 != ":" }
         ":"
         Prefix { $0 != ";" && $0 != "}" }
@@ -14,7 +39,7 @@ extension CSS {
         )
     }
 
-    static let blockParser = Parse {
+    private static let blockParser = Parse {
         Prefix { $0 != "{" }.map { selector in
             String(selector).trimmingCharacters(in: .whitespacesAndNewlines)
         }
@@ -35,7 +60,7 @@ extension CSS {
         )
     }
 
-    static let documentParser = Parse {
+    private static let documentParser = Parse {
         Many {
             blockParser
         }
@@ -44,13 +69,13 @@ extension CSS {
 
     // MARK: Comment parsing/removing
 
-    static let commentParser = Parse(String.init) {
+    private static let commentParser = Parse(String.init) {
         "/*"
         PrefixUpTo("*/").map(String.init)
         "*/"
     }
 
-    static let commentRemovingParser = Parse {
+    private static let commentRemovingParser = Parse {
         OneOf {
             PrefixUpTo("/*")
             Rest()

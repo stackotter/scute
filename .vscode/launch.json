@@ -17,6 +17,24 @@
             "args": [],
             "cwd": "${workspaceFolder:WebsiteBuilder}",
             "preLaunchTask": "swift: Build Release WebsiteBuilder"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug ScuteCLI",
+            "program": "${workspaceFolder:WebsiteBuilder}/.build/debug/ScuteCLI",
+            "args": [],
+            "cwd": "${workspaceFolder:WebsiteBuilder}",
+            "preLaunchTask": "swift: Build Debug ScuteCLI"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Release ScuteCLI",
+            "program": "${workspaceFolder:WebsiteBuilder}/.build/release/ScuteCLI",
+            "args": [],
+            "cwd": "${workspaceFolder:WebsiteBuilder}",
+            "preLaunchTask": "swift: Build Release ScuteCLI"
         }
     ]
 }

@@ -1,11 +1,11 @@
 import Foundation
 
-struct Page {
-    var styleSheets: [StyleSheet]
-    var scripts: [Script]
-    var content: String
+public struct Page {
+    public var styleSheets: [StyleSheet]
+    public var scripts: [Script]
+    public var content: String
 
-    static func fromMarkdownFile(at file: URL) throws -> Page {
+    public static func fromMarkdownFile(at file: URL) throws -> Page {
         let markdown = try String(contentsOf: file)
         let markdownHTML = try Markdown.html(from: markdown)
 

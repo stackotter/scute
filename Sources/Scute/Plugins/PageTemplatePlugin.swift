@@ -1,17 +1,25 @@
 import Foundation
 
-struct PageTemplatePlugin: Plugin {
-    var configuration: Configuration
+public struct PageTemplatePlugin: Plugin {
+    public var configuration: Configuration
 
-    struct Configuration {
-        var templateDirectory: URL
+    public struct Configuration {
+        public var templateDirectory: URL
+
+        public init(templateDirectory: URL) {
+            self.templateDirectory = templateDirectory
+        }
     }
 
-    struct Context {
-        var templateContents: String
+    public struct Context {
+        public var templateContents: String
     }
 
-    func setup(in directory: URL) throws -> Context {
+    public init(configuration: PageTemplatePlugin.Configuration) {
+        self.configuration = configuration
+    }
+
+    public func setup(in directory: URL) throws -> Context {
         // Copy template's css files
         let cssDirectoryContents = try FileManager.default.contentsOfDirectory(
             at: configuration.templateDirectory.appendingPathComponent("css"),
@@ -29,7 +37,7 @@ struct PageTemplatePlugin: Plugin {
         return Context(templateContents: templateContents)
     }
 
-    func process(_ page: inout Page, _ context: Context) throws {
+    public func process(_ page: inout Page, _ context: Context) throws {
         var content = context.templateContents
         content = content.replacingOccurrences(of: "{content}", with: page.content)
         content = content.replacingOccurrences(of: "{title}", with: "stackotter")

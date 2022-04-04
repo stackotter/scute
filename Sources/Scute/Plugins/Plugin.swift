@@ -1,6 +1,6 @@
 import Foundation
 
-protocol Plugin {
+public protocol Plugin {
     associatedtype Configuration
     associatedtype Context
 
@@ -11,13 +11,13 @@ protocol Plugin {
     func process(_ page: inout Page, _ context: Context) throws
 }
 
-extension Plugin where Configuration == Void {
+public extension Plugin where Configuration == Void {
     var configuration: Void {
         Void()
     }
 }
 
-extension Plugin where Context == Void {
+public extension Plugin where Context == Void {
     func setup(in directory: URL) throws -> Void {
         return Void()
     }
