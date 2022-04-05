@@ -15,7 +15,7 @@
       "location" : "https://github.com/stackotter/Parsley",
       "state" : {
         "branch" : "custom-extensions",
-        "revision" : "6535cb9821833bddda6b200731dc54429ecc2a8c"
+        "revision" : "0af424264ad1d14301082ba059a289f509c354df"
       }
     },
     {
@@ -48,10 +48,19 @@
     {
       "identity" : "swiftsoup",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/scinfu/SwiftSoup.git",
+      "location" : "https://github.com/scinfu/SwiftSoup",
       "state" : {
-        "revision" : "13ba661fd1146967270fca92ce8195b223631436",
-        "version" : "2.3.8"
+        "revision" : "5dccb0f9c94ac5e48031f3c0c3f4d2c6820939a0",
+        "version" : "2.4.1"
+      }
+    },
+    {
+      "identity" : "tomlkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/LebJe/TOMLKit.git",
+      "state" : {
+        "revision" : "d0d44fda394acdd43ded1face20f80a0c5195e04",
+        "version" : "0.5.2"
       }
     }
   ],

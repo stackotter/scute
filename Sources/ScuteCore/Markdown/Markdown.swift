@@ -6,7 +6,9 @@ public enum Markdown {
         return try Parsley.html(
             markdown,
             options: [.unsafe, .hardBreaks],
-            additionalSyntaxExtensions: [create_custom_strikethrough_extension()]
+            syntaxExtensions: SyntaxExtension.defaultExtensions + [.custom({
+                create_custom_strikethrough_extension()
+            })]
         )
     }
 }

@@ -1,4 +1,4 @@
 import XCTest
 import class Foundation.Bundle
 
-final class ScuteTests: XCTestCase {}
+final class ScuteCoreTests: XCTestCase {}

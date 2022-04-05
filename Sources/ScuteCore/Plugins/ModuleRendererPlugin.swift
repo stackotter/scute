@@ -8,6 +8,8 @@ public enum ModuleRendererPluginError: LocalizedError {
 }
 
 public struct ModuleRendererPlugin: Plugin {
+    public static var name = "module_renderer"
+    
     public static let moduleParser = Parse {
         OneOf {
             Parse {

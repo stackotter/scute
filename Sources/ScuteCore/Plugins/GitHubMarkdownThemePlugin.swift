@@ -1,6 +1,8 @@
 import Foundation
 
 public struct GitHubMarkdownThemePlugin: Plugin {
+    public static var name = "GitHubMarkdownTheme"
+
     public var configuration: Configuration
 
     public enum Theme: String {

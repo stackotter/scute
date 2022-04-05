@@ -1,6 +1,8 @@
 import Foundation
 
 public struct SyntaxHighlighterPlugin: Plugin {
+    public static var name = "syntax_highlighter"
+    
     public let configuration: Configuration
 
     public struct Configuration {

@@ -1,6 +1,8 @@
 import Foundation
 
 public struct PageTemplatePlugin: Plugin {
+    public static var name = "page_template"
+
     public var configuration: Configuration
 
     public struct Configuration {

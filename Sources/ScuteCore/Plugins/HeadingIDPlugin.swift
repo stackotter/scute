@@ -2,6 +2,8 @@ import SwiftSoup
 import Foundation
 
 public struct HeadingIDPlugin: Plugin {
+    public static var name = "HeadingIDs"
+
     public init() {}
 
     public func process(_ page: inout Page, _ context: Void) throws {

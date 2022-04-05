@@ -6,6 +6,10 @@ public enum Server {
         // Host a server
         let server = HTTPServer(port: port)
 
+        let notFoundPageFile = directory.appendingPathComponent("404.html")
+        let notFoundPageContents = (try? Data(contentsOf: notFoundPageFile)) ?? "404, not found".data(using: .utf8)!
+        let fileNotFoundResponse = HTTPResponse(version: .http11, statusCode: .notFound, headers: [:], body: notFoundPageContents)
+
         await server.appendRoute("GET *") { request in
             func fileToResponse(_ file: URL) -> HTTPResponse {
                 do {
@@ -34,7 +38,7 @@ public enum Server {
             } else if FileManager.default.itemExists(at: file, withType: .directory) && FileManager.default.itemExists(at: file.appendingPathComponent("index.html"), withType: .file) {
                 return fileToResponse(file.appendingPathComponent("index.html"))
             }
-            return HTTPResponse(statusCode: .notFound)
+            return fileNotFoundResponse
         }
 
         print("Listening at http://127.0.0.1:\(port)/")

@@ -4,6 +4,8 @@ public protocol Plugin {
     associatedtype Configuration
     associatedtype Context
 
+    static var name: String { get }
+
     var configuration: Configuration { get }
 
     func setup(in directory: URL) throws -> Context
