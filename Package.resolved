@@ -53,15 +53,6 @@
         "revision" : "5dccb0f9c94ac5e48031f3c0c3f4d2c6820939a0",
         "version" : "2.4.1"
       }
-    },
-    {
-      "identity" : "tomlkit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/LebJe/TOMLKit.git",
-      "state" : {
-        "revision" : "d0d44fda394acdd43ded1face20f80a0c5195e04",
-        "version" : "0.5.2"
-      }
     }
   ],
   "version" : 2

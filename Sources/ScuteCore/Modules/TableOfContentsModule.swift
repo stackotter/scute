@@ -7,7 +7,7 @@ public enum TableOfContentsModuleError: LocalizedError {
 
 /// A module that creates a simple table of contents from headings on a page.
 ///
-/// The ``HeadingIDPlugin`` to be run before the ``ModuleRendererPlugin`` for the entries to link to the headings.
+/// The ``HeadingIDPlugin`` must be run before the ``ModuleRendererPlugin`` for the entries to link to the headings.
 public struct TableOfContentsModule: Module {
     public static var name = "TableOfContents"
 

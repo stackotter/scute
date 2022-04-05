@@ -2,7 +2,7 @@ import Foundation
 import ScuteCore
 
 @main
-struct Scute {
+struct ScuteCLI {
     static let inputDirectory = URL(fileURLWithPath: "src")
     static let outputDirectory = URL(fileURLWithPath: "out")
     static let templateDirectory = URL(fileURLWithPath: "template")
@@ -21,6 +21,9 @@ struct Scute {
         try site.addPlugin(ModuleRendererPlugin(configuration: {
             var moduleRendererConfiguration = ModuleRendererPlugin.Configuration()
             moduleRendererConfiguration.addModule(TableOfContentsModule())
+            moduleRendererConfiguration.addModule(ArticleIndexModule(
+                configuration: .init(inputDirectory: inputDirectory)
+            ))
             return moduleRendererConfiguration
         }()))
         try site.addPlugin(PageTemplatePlugin(configuration: .init(templateDirectory: templateDirectory)))
