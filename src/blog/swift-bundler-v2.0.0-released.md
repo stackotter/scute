@@ -1,3 +1,8 @@
+---
+year: 2022
+month: 04
+day: 02
+---
 # Swift Bundler v2.0.0 released! 🎉
 
 After almost exactly a month of work (and ~130 commits), I have finished rewriting the entirety of Swift Bundler to improve it in every single way! Rewriting Swift Bundler has taught me a lot about designing robust and user-friendly software, and hopefully I will soon find the time to create some articles about what I have learnt.

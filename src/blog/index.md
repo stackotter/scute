@@ -4,4 +4,4 @@ Join me on my adventures in Swift, optimisation, functional programming and cybe
 
 ## Articles
 
-@ArticleIndex{"path":"/blog"}@
+@ArticleIndex{"path":"/blog","reverse":true}@
