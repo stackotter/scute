@@ -7,11 +7,12 @@ public struct Page {
 
     public static func fromMarkdownFile(at file: URL) throws -> Page {
         let markdown = try String(contentsOf: file)
-        let markdownHTML = try Markdown.html(from: markdown)
+        let document = try Markdown.document(from: markdown)
 
         let html = """
 <div class='markdown-body'>
-\(markdownHTML)
+\(document.title.map({ "<h1>\($0)</h1>" }) ?? "")
+\(document.body)
 </div>
 """
 
