@@ -44,7 +44,7 @@ public struct Site {
             })
 
             // Host the site
-            try await Server.host(outputDirectory, onPort: 80)
+            try await Server.host(outputDirectory, onPort: 8081)
         } catch {
             print("Failed to run site: \(error)")
             Foundation.exit(1)

@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "WebsiteBuilder",
+    name: "scute",
     platforms: [.macOS(.v12)],
     products: [
         .executable(name: "scute", targets: ["scute"]),
