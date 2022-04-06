@@ -7,7 +7,7 @@ public enum Markdown {
             markdown,
             options: [.unsafe, .hardBreaks],
             syntaxExtensions: SyntaxExtension.defaultExtensions + [.custom({
-                create_custom_strikethrough_extension()
+                create_module_syntax_extension()
             })]
         )
     }
@@ -17,7 +17,7 @@ public enum Markdown {
             markdown,
             options: [.unsafe, .hardBreaks],
             syntaxExtensions: SyntaxExtension.defaultExtensions + [.custom({
-                create_custom_strikethrough_extension()
+                create_module_syntax_extension()
             })]
         )
     }

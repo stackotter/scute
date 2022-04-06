@@ -38,6 +38,7 @@ public struct ModuleRendererPlugin: Plugin {
                 guard let data = parametersString.data(using: .utf8) else {
                     throw ModuleRendererPluginError.invalidUTF8InModuleProperties(module: T.name)
                 }
+                print(parametersString)
                 let parameters = try JSONDecoder().decode(T.Parameters.self, from: data)
                 try module.render(moduleElement: element, with: parameters, page: page)
             }
@@ -58,6 +59,7 @@ public struct ModuleRendererPlugin: Plugin {
             guard let renderer = configuration.renderers[name] else {
                 throw ModuleRendererPluginError.noSuchModule(name)
             }
+
             try renderer(moduleElement, parameters ?? "{}", page)
         }
     }

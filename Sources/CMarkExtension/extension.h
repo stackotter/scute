@@ -5,6 +5,6 @@
 #include <render.h>
 #include <stdio.h>
 
-cmark_syntax_extension *create_custom_strikethrough_extension(void);
+cmark_syntax_extension *create_module_syntax_extension(void);
 
 #endif
