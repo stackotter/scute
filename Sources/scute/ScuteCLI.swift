@@ -4,7 +4,7 @@ import ScuteCore
 @main
 struct ScuteCLI {
     static let inputDirectory = URL(fileURLWithPath: "src")
-    static let outputDirectory = URL(fileURLWithPath: "out")
+    static let outputDirectory = URL(fileURLWithPath: "build")
     static let templateFile = URL(fileURLWithPath: "src/_template.html")
 
     static func main() async throws {
