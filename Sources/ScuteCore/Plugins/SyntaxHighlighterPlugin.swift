@@ -28,7 +28,8 @@ public struct SyntaxHighlighterPlugin: Plugin {
         let highlightJSURL = URL(string: "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js")!
         let highlightJSFilePath = "/js/highlight.min.js"
         let highlightJSFile = directory.appendingPathComponent(highlightJSFilePath)
-        try String(contentsOf: highlightJSURL).write(to: highlightJSFile, atomically: false, encoding: .utf8)
+        let highlightJSScriptContents = try String(contentsOf: highlightJSURL) + "\nhljs.highlightAll();"
+        try highlightJSScriptContents.write(to: highlightJSFile, atomically: false, encoding: .utf8)
 
         // Download theme
         let themeURL = URL(string: "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/\(configuration.theme).min.css")!
@@ -79,8 +80,7 @@ pre code.hljs {
             .internalSheet(content: context.additionalStyles)
         ]
         page.scripts += [
-            .externalScript(url: context.highlightJSFilePath),
-            .internalScript(contents: "hljs.highlightAll();")
+            .externalScript(url: context.highlightJSFilePath, shouldDefer: true)
         ]
     }
 }
