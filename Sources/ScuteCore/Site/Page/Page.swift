@@ -5,6 +5,7 @@ import SwiftSoup
 public enum PageError: LocalizedError {
     case unknownTemplateVariable(String)
     case pageMustContainAHeadTag
+    case failedToGenerateDescription(URL)
 }
 
 public struct Page {
@@ -52,9 +53,21 @@ public struct Page {
         // The title for the page tab
         let title = (document.title.map({ "\($0) - " }) ?? "") + site.name
 
+        // Generate a description
+        let parsedBody = try SwiftSoup.parse(document.body)
+        let description: String
+        if let value = document.metadata["description"] {
+            description = value
+        } else if let firstParagraph = try? parsedBody.getElementsByTag("p").first() {
+            description = try firstParagraph.text()
+        } else {
+            throw PageError.failedToGenerateDescription(file)
+        }
+
         // The value to substitute for each variable
         let templateVariables: [String: String] = [
             "title": title,
+            "description": description,
             "content": """
 \(document.title.map({ "<h1>\($0)</h1>" }) ?? "")
 \(document.body)
