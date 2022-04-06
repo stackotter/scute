@@ -49,9 +49,12 @@ public struct Page {
             templateContents = Self.defaultTemplate
         }
 
+        // The title for the page tab
+        let title = (document.title.map({ "\($0) - " }) ?? "") + site.name
+
         // The value to substitute for each variable
         let templateVariables: [String: String] = [
-            "title": site.name,
+            "title": title,
             "content": """
 \(document.title.map({ "<h1>\($0)</h1>" }) ?? "")
 \(document.body)
