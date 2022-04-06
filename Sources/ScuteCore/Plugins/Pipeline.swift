@@ -6,38 +6,36 @@ public enum PipelineError: LocalizedError {
 }
 
 public struct Pipeline {
-    public let inputDirectory: URL
-    public let outputDirectory: URL
+    public let configuration: Site.Configuration
 
     private var plugins: [(_ outputDirectory: URL) throws -> ((inout Page) throws -> Void)] = []
 
-    public init(inputDirectory: URL, outputDirectory: URL) {
-        self.inputDirectory = inputDirectory
-        self.outputDirectory = outputDirectory
+    public init(_ configuration: Site.Configuration) {
+        self.configuration = configuration
     }
 
     public func buildSite() throws {
         let start = CFAbsoluteTimeGetCurrent()
 
         // Delete the output directory
-        try? FileManager.default.removeItem(at: outputDirectory)
+        try? FileManager.default.removeItem(at: configuration.outputDirectory)
 
         // Create the basic structure of the output directory
-        try FileManager.default.createDirectory(at: outputDirectory.appendingPathComponent("css"), withIntermediateDirectories: true)
-        try FileManager.default.createDirectory(at: outputDirectory.appendingPathComponent("js"), withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: configuration.outputDirectory.appendingPathComponent("css"), withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: configuration.outputDirectory.appendingPathComponent("js"), withIntermediateDirectories: true)
 
-        let processors = try plugins.map { try $0(outputDirectory) }
+        let processors = try plugins.map { try $0(configuration.outputDirectory) }
 
         // Enumerate the input directory
-        guard let enumerator = FileManager.default.enumerator(atPath: inputDirectory.path) else {
+        guard let enumerator = FileManager.default.enumerator(atPath: configuration.inputDirectory.path) else {
             print("Failed to enumerate input files")
             throw PipelineError.failedToEnumerateInputDirectory
         }
 
         // Build all input files
         for case let relativePath as String in enumerator {
-            let inputFile = inputDirectory.appendingPathComponent(relativePath)
-            let outputFile = outputDirectory.appendingPathComponent(relativePath)
+            let inputFile = configuration.inputDirectory.appendingPathComponent(relativePath)
+            let outputFile = configuration.outputDirectory.appendingPathComponent(relativePath)
 
             // If it's a directory, just create it and move on
             if inputFile.hasDirectoryPath {
@@ -45,14 +43,19 @@ public struct Pipeline {
                 continue
             }
 
+            // Skip the page template file
+            if inputFile == configuration.templateFile {
+                continue
+            }
+
             // If its a file, render it if it's markdown, otherwise just copy it
             if inputFile.pathExtension == "md" {
                 let outputFile = outputFile.deletingPathExtension().appendingPathExtension("html")
 
-                var page = try Page.fromMarkdownFile(at: inputFile)
+                var page = try Page.fromMarkdownFile(at: inputFile, forSite: configuration)
                 try process(&page, processors: processors)
 
-                let html = page.toHTML()
+                let html = try page.toHTML()
                 try html.write(
                     to: outputFile,
                     atomically: true,

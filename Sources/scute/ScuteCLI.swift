@@ -5,14 +5,18 @@ import ScuteCore
 struct ScuteCLI {
     static let inputDirectory = URL(fileURLWithPath: "src")
     static let outputDirectory = URL(fileURLWithPath: "out")
-    static let templateDirectory = URL(fileURLWithPath: "template")
+    static let templateFile = URL(fileURLWithPath: "src/_template.html")
 
     static func main() async throws {
-        // Configure site
-        var site = Site(
+        let configuration = Site.Configuration(
+            name: "stackotter",
             inputDirectory: inputDirectory,
-            outputDirectory: outputDirectory
+            outputDirectory: outputDirectory,
+            templateFile: templateFile
         )
+
+        // Configure site
+        var site = Site(configuration)
 
         // Register plugins
         try site.addPlugin(SyntaxHighlighterPlugin(configuration: .init(theme: "atom-one-dark")))
@@ -26,7 +30,6 @@ struct ScuteCLI {
             ))
             return moduleRendererConfiguration
         }()))
-        try site.addPlugin(PageTemplatePlugin(configuration: .init(templateDirectory: templateDirectory)))
 
         // Run site
         await site.main()

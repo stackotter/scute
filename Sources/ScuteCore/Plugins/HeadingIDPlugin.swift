@@ -9,24 +9,25 @@ public struct HeadingIDPlugin: Plugin {
     public func process(_ page: inout Page, _ context: Void) throws {
         // TODO: handle naming collisions
 
-        let document = try SwiftSoup.parse(page.content)
-        let headings = try document.select("h1, h2, h3, h4, h5, h6")
+        let headings = try page.content.select("h1, h2, h3, h4, h5, h6")
 
         for heading in headings {
             let text = try heading.text(trimAndNormaliseWhitespace: true)
 
             // Remove disallowed characters and trailing/leading whitespace
             let filteredText = text.unicodeScalars
-                .filter {
-                    $0.properties.isAlphabetic
-                    || $0.properties.isASCIIHexDigit // there's no category for digits, but this is sufficient
-                    || $0 == " "
-                    || $0 == "-"
-                    || $0 == "_"
-                    || $0 == "."
-                    || $0 == ":"
+                .filter { (unicodeScalar: UnicodeScalar) -> Bool in
+                    unicodeScalar.properties.isAlphabetic
+                    || unicodeScalar.properties.isASCIIHexDigit // there's no category for digits, but this is sufficient
+                    || unicodeScalar == " "
+                    || unicodeScalar == "-"
+                    || unicodeScalar == "_"
+                    || unicodeScalar == "."
+                    || unicodeScalar == ":"
                 }
-                .reduce("") { $0 + String($1) }
+                .reduce("") { (partialResult: String, element: UnicodeScalar) -> String in
+                    partialResult + String(element)
+                }
 
             let trimmedText = filteredText
                 .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -37,7 +38,5 @@ public struct HeadingIDPlugin: Plugin {
 
             try heading.attr("id", id)
         }
-
-        page.content = try document.outerHtml()
     }
 }

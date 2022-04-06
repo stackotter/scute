@@ -1,52 +1,71 @@
 import Foundation
 
+enum Command: String {
+    case build
+    case preview
+}
+
 public struct Site {
-    public let inputDirectory: URL
-    public let outputDirectory: URL
+    public let configuration: Configuration
 
     private var pipeline: Pipeline
 
-    public init(inputDirectory: URL, outputDirectory: URL) {
-        self.inputDirectory = inputDirectory
-        self.outputDirectory = outputDirectory
-
-        pipeline = Pipeline(
-            inputDirectory: inputDirectory,
-            outputDirectory: outputDirectory
-        )
+    public init(_ configuration: Configuration) {
+        self.configuration = configuration
+        pipeline = Pipeline(configuration)
     }
 
     public func main() async -> Never {
+        func exitWithUsage() -> Never {
+            print("Usage: scute [build|preview]")
+            Foundation.exit(1)
+        }
+
+        let arguments = CommandLine.arguments
+        guard
+            arguments.count == 2,
+            let command = Command(rawValue: arguments[1])
+        else {
+            exitWithUsage()
+        }
+
         do {
-            // Quit the program on interrupt (the server sometimes doesn't like stopping)
-            trap(.interrupt, action: { _ in
-                Foundation.exit(0)
-            })
-
-            // Build the site
-            print("Building site")
-            try build()
-
-            // Rebuild site when any input files change
-            print("Watching file system for changes")
-            try FileSystemWatcher.startWatchingForDebouncedModifications(paths: [inputDirectory.path], with: {
-                do {
-                    print("Detected changes, rebuilding site")
+            switch command {
+                case .build:
+                    print("Building site")
                     try build()
-                    print("Successfully rebuilt site")
-                } catch {
-                    print("Failed to rebuild site: \(error)")
-                    Foundation.exit(1)
-                }
-            }, errorHandler: { error in
-                print("Error processing file system event: \(error)")
-                Foundation.exit(1)
-            })
+                case .preview:
+                    // Quit the program on interrupt (the server sometimes doesn't like stopping)
+                    trap(.interrupt, action: { _ in
+                        Foundation.exit(0)
+                    })
 
-            // Host the site
-            try await Server.host(outputDirectory, onPort: 8081)
+                    // Build the site
+                    print("Building site")
+                    try build()
+
+                    // Rebuild site when any input files change
+                    print("Watching file system for changes")
+                    let pathsToWatch = [configuration.inputDirectory.path, configuration.templateFile?.path].compactMap { $0 }
+                    try FileSystemWatcher.startWatchingForDebouncedModifications(paths: pathsToWatch, with: {
+                        do {
+                            print("Detected changes, rebuilding site")
+                            try build()
+                            print("Successfully rebuilt site")
+                        } catch {
+                            print("Failed to rebuild site: \(error)")
+                            Foundation.exit(1)
+                        }
+                    }, errorHandler: { error in
+                        print("Error processing file system event: \(error)")
+                        Foundation.exit(1)
+                    })
+
+                    // Host the site
+                    try await Server.host(configuration.outputDirectory, onPort: 8081)
+            }
         } catch {
-            print("Failed to run site: \(error)")
+            print("Failed to \(command.rawValue) site: \(error)")
             Foundation.exit(1)
         }
         Foundation.exit(0)

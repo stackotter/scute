@@ -49,8 +49,7 @@ public struct ModuleRendererPlugin: Plugin {
     }
 
     public func process(_ page: inout Page, _ context: Void) throws {
-        let document = try SwiftSoup.parse(page.content)
-        let moduleElements = try document.select("module")
+        let moduleElements = try page.content.select("module")
 
         for moduleElement in moduleElements {
             let content = try moduleElement.html()
@@ -61,8 +60,5 @@ public struct ModuleRendererPlugin: Plugin {
             }
             try renderer(moduleElement, parameters ?? "{}", page)
         }
-
-        let html = try document.html()
-        page.content = html
     }
 }
