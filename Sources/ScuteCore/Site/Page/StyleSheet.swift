@@ -1,12 +1,17 @@
+import Foundation
+
 public enum StyleSheet {
-    case externalSheet(url: String)
-    case internalSheet(content: String)
+    case external(url: URL)
+    case selfHosted(path: String)
+    case inline(content: String)
 
     public var html: String {
         switch self {
-            case .externalSheet(let url):
-                return #"<link rel="stylesheet" href="\#(url)"/>"#
-            case .internalSheet(let content):
+            case .external(let url):
+                return #"<link rel="stylesheet" href="\#(url.absoluteString)"/>"#
+            case .selfHosted(let path):
+                return #"<link rel="stylesheet" href="\#(path)"/>"#
+            case .inline(let content):
                 return #"<style>\#(content)</style>"#
         }
     }

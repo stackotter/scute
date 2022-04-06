@@ -38,7 +38,7 @@ public struct GitHubMarkdownThemePlugin: Plugin {
 
     public func process(_ page: inout Page, _ context: Context) throws {
         page.styleSheets += [
-            .externalSheet(url: context.cssFilePath)
+            .selfHosted(path: context.cssFilePath)
         ]
     }
 }

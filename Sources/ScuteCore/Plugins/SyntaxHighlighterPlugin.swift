@@ -75,10 +75,16 @@ pre code.hljs {
     }
 
     public func process(_ page: inout Page, _ context: Context) throws {
+        // Only add highlight.js if the page contains a code block
+        if try page.content.getElementsByTag("pre").isEmpty() {
+            return
+        }
+
         page.styleSheets += [
-            .externalSheet(url: context.themeCSSFilePath),
-            .internalSheet(content: context.additionalStyles)
+            .selfHosted(path: context.themeCSSFilePath),
+            .inline(content: context.additionalStyles)
         ]
+        
         page.scripts += [
             .externalScript(url: context.highlightJSFilePath, shouldDefer: true)
         ]
