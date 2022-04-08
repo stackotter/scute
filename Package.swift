@@ -13,7 +13,7 @@ let package = Package(
         .package(url: "https://github.com/pointfreeco/swift-parsing", from: "0.8.0"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.1.1"),
         .package(url: "https://github.com/stackotter/swift-cmark-gfm", from: "1.0.2"),
-        .package(url: "https://github.com/stackotter/swift-css-parser", branch: "main"),
+        .package(url: "https://github.com/stackotter/swift-css-parser", from: "0.1.0"),
         .package(url: "https://github.com/loopwerk/Parsley", from: "0.9.0"),
         .package(url: "https://github.com/scinfu/SwiftSoup", from: "2.3.8"),
         .package(url: "https://github.com/swhitty/FlyingFox", from: "0.6.0"),

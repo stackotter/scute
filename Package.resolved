@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/stackotter/swift-css-parser",
       "state" : {
-        "branch" : "main",
-        "revision" : "b0d3312bfbf4b1ae4abceff5f272b77e841c15df"
+        "revision" : "2d79c2b8ce00c6d065a1594ed3bf1fe67136165b",
+        "version" : "0.1.0"
       }
     },
     {
