@@ -29,8 +29,8 @@ public struct GitHubMarkdownThemePlugin: Plugin {
     public func setup(in directory: URL) throws -> Context {
         let url = URL(string: "https://raw.githubusercontent.com/sindresorhus/github-markdown-css/main/github-markdown-\(configuration.theme.rawValue).css")!
         let cssFilePath = "/css/github-markdown-\(configuration.theme.rawValue).css"
-        let styleSheetContents = try String(contentsOf: url)
-        try styleSheetContents.write(to: directory.appendingPathComponent(cssFilePath), atomically: false, encoding: .utf8)
+        let stylesheetContents = try String(contentsOf: url)
+        try stylesheetContents.write(to: directory.appendingPathComponent(cssFilePath), atomically: false, encoding: .utf8)
 
         return Context(
             cssFilePath: cssFilePath
@@ -38,7 +38,7 @@ public struct GitHubMarkdownThemePlugin: Plugin {
     }
 
     public func process(_ page: inout Page, _ context: Context) throws {
-        page.styleSheets += [
+        page.stylesheets += [
             .selfHosted(path: context.cssFilePath)
         ]
     }

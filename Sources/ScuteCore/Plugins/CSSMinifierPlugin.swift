@@ -9,11 +9,11 @@ public struct CSSMinifierPlugin: Plugin {
     public init() {}
 
     public func process(_ pages: inout [Page], _ context: Void, site: Site.Configuration) throws {
-        let styleSheets = Array(Set(pages.flatMap(\.styleSheets)))
+        let stylesheets = Array(Set(pages.flatMap(\.stylesheets)))
 
-        for styleSheet in styleSheets {
+        for stylesheet in stylesheets {
             let affectedPages = pages.enumerated().filter { (index: Int, page: Page) -> Bool in
-                return page.styleSheets.contains { $0 == styleSheet }
+                return page.stylesheets.contains { $0 == stylesheet }
             }
 
             guard !affectedPages.isEmpty else {
@@ -21,7 +21,7 @@ public struct CSSMinifierPlugin: Plugin {
             }
 
             let sheetContent: String
-            switch styleSheet {
+            switch stylesheet {
                 case .selfHosted(let path):
                     let file = site.outputDirectory.appendingPathComponent(path)
                     sheetContent = try String(contentsOf: file)
@@ -31,79 +31,84 @@ public struct CSSMinifierPlugin: Plugin {
                     continue
             }
 
-            let sheet: [SwiftCSSParser.Token]
+            let statements: [SwiftCSSParser.Statement]
             do {
-                sheet = try SwiftCSSParser.Stylesheet.parse(from: sheetContent).tokens
+                statements = try SwiftCSSParser.Stylesheet.parseStatements(from: sheetContent)
             } catch {
-                print("Failed to parser style sheet: \(styleSheet), content: \(sheetContent)")
                 throw error
             }
 
             // Filter out unused tokens
-            var filteredTokens: [SwiftCSSParser.Token] = []
-            var iterator = sheet.makeIterator()
-            while let token = iterator.next() {
-                switch token.type {
-                    case .selectorStart:
-                        // Remove pseudo-selectors from the query
-                        let query: String
-                        do {
-                            query = try Self.queryCleaningParser.parse(token.data)
-                        } catch {
-                            print("'\(token.data)'")
-                            print(sheet)
-                            throw error
-                        }
+            let filteredStatements = try Self.removedUnusedRuleSets(from: statements, pages: pages)
+            let minifiedSheet = Stylesheet(filteredStatements)
+            let minifiedContents = minifiedSheet.minified()
 
-                        // Figure out whether any page matche the selector
-                        var isUsed = false
-                        for (_, page) in affectedPages {
-                            do {
-                                if !(try page.content.select(query).isEmpty()) {
-                                    isUsed = true
-                                    break
-                                }
-                            } catch {
-                                print("invalid selector: '\(token.data)' got cleaned to '\(query)'")
-                                throw error
-                            }
-                        }
-
-                        if isUsed {
-                            filteredTokens.append(token)
-                        } else {
-                            // Skip over the block because it's unused
-                            while let token = iterator.next(), token.type != .selectorEnd {
-                                continue
-                            }
-                        }
-                    default:
-                        filteredTokens.append(token)
-                }
-            }
-
-            let minifiedSheet = SwiftCSSParser.Stylesheet(filteredTokens)
-            let minifiedContents = minifiedSheet.minify()
-
-            // TODO: handle errors better here
-            switch styleSheet {
+            switch stylesheet {
                 case .selfHosted(let path):
                     let file = site.outputDirectory.appendingPathComponent(path)
                     try minifiedContents.write(to: file, atomically: false, encoding: .utf8)
                 case .inline:
                     for (index, _) in affectedPages {
-                        guard let styleSheetIndex = pages[index].styleSheets.firstIndex(of: styleSheet) else {
-                            print("Failed to minify stylesheet: \(styleSheet)")
+                        guard let stylesheetIndex = pages[index].stylesheets.firstIndex(of: stylesheet) else {
+                            print("Failed to minify stylesheet: \(stylesheet)")
                             continue
                         }
 
-                        pages[index].styleSheets[styleSheetIndex] = .inline(content: minifiedContents)
+                        pages[index].stylesheets[stylesheetIndex] = .inline(content: minifiedContents)
                     }
                 case .external:
                     // This shouldn't happen, but we just ignore it if it does
                     continue
             }
         }
+    }
+
+    static func removedUnusedRuleSets(from statements: [Statement], pages: [Page]) throws -> [Statement] {
+        var filteredStatements: [Statement] = []
+        for statement in statements {
+            switch statement {
+                case .ruleSet(let ruleSet):
+                    if try Self.isRuleSetUsed(ruleSet, in: pages) {
+                        filteredStatements.append(statement)
+                    }
+                case .atBlock(let block):
+                    let blockFilteredStatements = try Self.removedUnusedRuleSets(from: block.statements, pages: pages)
+                    if !block.statements.isEmpty {
+                        filteredStatements.append(.atBlock(AtBlock(
+                            identifier: block.identifier,
+                            statements: blockFilteredStatements
+                        )))
+                    }
+                case .importRule, .charsetRule, .namespaceRule:
+                    filteredStatements.append(statement)
+            }
+        }
+        return filteredStatements
+    }
+
+    static func isRuleSetUsed(_ ruleSet: RuleSet, in pages: [Page]) throws -> Bool {
+        // Remove pseudo-selectors from the query
+        let query: String
+        do {
+            query = try Self.queryCleaningParser.parse(ruleSet.selector)
+        } catch {
+            throw error
+        }
+
+        // Figure out whether any page matche the selector
+        var isUsed = false
+        for page in pages {
+            do {
+                if !(try page.content.select(query).isEmpty()) {
+                    isUsed = true
+                    break
+                }
+            } catch {
+                throw error
+            }
+        }
+
+        return isUsed
     }
 
     static let selectorCharacters: CharacterSet = {

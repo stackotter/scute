@@ -12,10 +12,10 @@
     {
       "identity" : "parsley",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/stackotter/Parsley",
+      "location" : "https://github.com/loopwerk/Parsley",
       "state" : {
-        "branch" : "custom-extensions",
-        "revision" : "0af424264ad1d14301082ba059a289f509c354df"
+        "revision" : "3240bdfee97f3bbde5c4ec150a29b0abcb0d3d21",
+        "version" : "0.9.0"
       }
     },
     {
@@ -37,6 +37,15 @@
       }
     },
     {
+      "identity" : "swift-css-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/swift-css-parser",
+      "state" : {
+        "branch" : "main",
+        "revision" : "b0d3312bfbf4b1ae4abceff5f272b77e841c15df"
+      }
+    },
+    {
       "identity" : "swift-parsing",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-parsing",
@@ -50,8 +59,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/scinfu/SwiftSoup",
       "state" : {
-        "revision" : "5dccb0f9c94ac5e48031f3c0c3f4d2c6820939a0",
-        "version" : "2.4.1"
+        "revision" : "41e7c263fb8c277e980ebcb9b0b5f6031d3d4886",
+        "version" : "2.4.2"
       }
     }
   ],

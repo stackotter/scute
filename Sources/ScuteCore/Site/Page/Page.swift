@@ -20,7 +20,7 @@ public struct Page {
 </html>
 """
 
-    public var styleSheets: [StyleSheet]
+    public var stylesheets: [Stylesheet]
     public var scripts: [Script]
     public var content: Element
 
@@ -88,7 +88,7 @@ public struct Page {
 
         let parsedHTML = try SwiftSoup.parse(html)
 
-        return Page(styleSheets: [.selfHosted(path: "/css/page.css")], scripts: [], content: parsedHTML)
+        return Page(stylesheets: [.selfHosted(path: "/css/page.css")], scripts: [], content: parsedHTML)
     }
 
     func toHTML() throws -> String {
@@ -96,7 +96,7 @@ public struct Page {
             throw PageError.pageMustContainAHeadTag
         }
 
-        try head.append(styleSheets.map(\.html).joined(separator: ""))
+        try head.append(stylesheets.map(\.html).joined(separator: ""))
         try head.append(scripts.map(\.html).joined(separator: ""))
 
         return try content.outerHtml()

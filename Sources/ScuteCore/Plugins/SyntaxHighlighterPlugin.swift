@@ -44,28 +44,30 @@ public struct SyntaxHighlighterPlugin: Plugin {
         try css.write(to: cssFile, atomically: false, encoding: .utf8)
 
         // Parse the theme's CSS
-        let cssTokens = try SwiftCSSParser.Stylesheet.parse(from: css).tokens
+        let cssStatements = try SwiftCSSParser.Stylesheet.parseStatements(from: css)
 
-        // Iterate through the css tokens to find the background color for `.hljs`
+        // Iterate through the statements to find the background color for `.hljs`
         let selector = ".hljs"
         var backgroundColor: String? = nil
-        var iterator = cssTokens.makeIterator()
-    outerLoop:
-        while let token = iterator.next() {
-            guard token.type == .selectorStart else {
-                continue
-            }
-
-            if token.data == selector {
-                while let token = iterator.next(), token.type != .selectorEnd {
-                    if token.type == .property && (token.data == "background" || token.data == "background-color") {
-                        guard let backgroundValue = iterator.next() else {
-                            break outerLoop
-                        }
-                        backgroundColor = backgroundValue.data
-                        break outerLoop
+    loop:
+        for statement in cssStatements {
+            switch statement {
+                case .ruleSet(let ruleSet):
+                    guard ruleSet.selector == selector else {
+                        continue
                     }
-                }
+
+                    guard let backgroundDeclaration = ruleSet.declarations.first(where: { declaration in
+                        declaration.property == "background" || declaration.property == "background-color"
+                    }) else {
+                        continue
+                    }
+
+                    backgroundColor = backgroundDeclaration.value
+                    break loop
+                default:
+                    // It is assumed that the background colour won't be defined inside an at-block
+                    break
             }
         }
 
@@ -81,8 +83,7 @@ pre code.hljs {
     padding: 0 !important;
 }
 
-.markdown-body .highlight pre,
-.markdown-body pre {
+.markdown-body .highlight pre, .markdown-body pre {
     background-color: \(themeBackgroundColor) !important;
 }
 """
@@ -101,7 +102,7 @@ pre code.hljs {
             return
         }
 
-        page.styleSheets += [
+        page.stylesheets += [
             .selfHosted(path: context.themeCSSFilePath),
             .inline(content: context.additionalStyles)
         ]
