@@ -1,4 +1,9 @@
 import Foundation
+import SwiftCSSParser
+
+public enum SyntaxHighlighterPluginError: LocalizedError {
+    case failedToGetThemeBackgroundColor
+}
 
 public struct SyntaxHighlighterPlugin: Plugin {
     public static var name = "syntax_highlighter"
@@ -38,23 +43,39 @@ public struct SyntaxHighlighterPlugin: Plugin {
         let css = try String(contentsOf: themeURL)
         try css.write(to: cssFile, atomically: false, encoding: .utf8)
 
-        // Get the theme's background color
-        let blocks = try CSS.parseDocument(css).unwrap().blocks
+        // Parse the theme's CSS
+        let cssTokens = try SwiftCSSParser.Stylesheet.parse(from: css).tokens
 
-        guard
-            let hljsBlock = blocks.filter({ (block: CSS.Block) -> Bool in
-                block.selector == ".hljs"
-            }).first,
-            let backgroundRule = hljsBlock.rules.filter({ (rule: CSS.Rule) -> Bool in
-                rule.property == "background" || rule.property == "background-color"
-            }).first
-        else {
-            print("Failed to get theme background color")
-            Foundation.exit(1)
+        // Iterate through the css tokens to find the background color for `.hljs`
+        let selector = ".hljs"
+        var backgroundColor: String? = nil
+        var iterator = cssTokens.makeIterator()
+    outerLoop:
+        while let token = iterator.next() {
+            guard token.type == .selectorStart else {
+                continue
+            }
+
+            if token.data == selector {
+                while let token = iterator.next(), token.type != .selectorEnd {
+                    if token.type == .property && (token.data == "background" || token.data == "background-color") {
+                        guard let backgroundValue = iterator.next() else {
+                            break outerLoop
+                        }
+                        backgroundColor = backgroundValue.data
+                        break outerLoop
+                    }
+                }
+            }
         }
 
-        let themeBackgroundColor = backgroundRule.value
+        guard let backgroundColor = backgroundColor else {
+            throw SyntaxHighlighterPluginError.failedToGetThemeBackgroundColor
+        }
 
+        let themeBackgroundColor = backgroundColor
+
+        // Override some styles to make it work nicely with GitHubMarkdownTheme
         let additionalStyles = """
 pre code.hljs {
     padding: 0 !important;

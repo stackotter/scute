@@ -1,7 +1,7 @@
 import Foundation
 
 public struct GitHubMarkdownThemePlugin: Plugin {
-    public static var name = "GitHubMarkdownTheme"
+    public static var name = "github_markdown_theme"
 
     public var configuration: Configuration
 
@@ -29,7 +29,8 @@ public struct GitHubMarkdownThemePlugin: Plugin {
     public func setup(in directory: URL) throws -> Context {
         let url = URL(string: "https://raw.githubusercontent.com/sindresorhus/github-markdown-css/main/github-markdown-\(configuration.theme.rawValue).css")!
         let cssFilePath = "/css/github-markdown-\(configuration.theme.rawValue).css"
-        try String(contentsOf: url).write(to: directory.appendingPathComponent(cssFilePath), atomically: true, encoding: .utf8)
+        let styleSheetContents = try String(contentsOf: url)
+        try styleSheetContents.write(to: directory.appendingPathComponent(cssFilePath), atomically: false, encoding: .utf8)
 
         return Context(
             cssFilePath: cssFilePath

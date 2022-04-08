@@ -88,7 +88,7 @@ public struct Page {
 
         let parsedHTML = try SwiftSoup.parse(html)
 
-        return Page(styleSheets: [], scripts: [], content: parsedHTML)
+        return Page(styleSheets: [.selfHosted(path: "/css/page.css")], scripts: [], content: parsedHTML)
     }
 
     func toHTML() throws -> String {

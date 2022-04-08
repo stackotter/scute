@@ -19,7 +19,6 @@ struct ScuteCLI {
         var site = Site(configuration)
 
         // Register plugins
-        try site.addPlugin(SyntaxHighlighterPlugin(configuration: .init(theme: "atom-one-dark")))
         try site.addPlugin(GitHubMarkdownThemePlugin(configuration: .init(theme: .light)))
         try site.addPlugin(HeadingIDPlugin())
         try site.addPlugin(ModuleRendererPlugin(configuration: {
@@ -30,6 +29,8 @@ struct ScuteCLI {
             ))
             return moduleRendererConfiguration
         }()))
+        try site.addPlugin(CSSMinifierPlugin())
+        try site.addPlugin(SyntaxHighlighterPlugin(configuration: .init(theme: "atom-one-dark")))
 
         // Run site
         await site.main()

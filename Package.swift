@@ -15,7 +15,8 @@ let package = Package(
         .package(url: "https://github.com/stackotter/swift-cmark-gfm", from: "1.0.2"),
         .package(url: "https://github.com/stackotter/Parsley", branch: "custom-extensions"),
         .package(url: "https://github.com/scinfu/SwiftSoup", from: "2.3.8"),
-        .package(url: "https://github.com/swhitty/FlyingFox", from: "0.6.0")
+        .package(url: "https://github.com/swhitty/FlyingFox", from: "0.6.0"),
+        .package(path: "../CSS/swift-css-parser"),
     ],
     targets: [
         .target(
@@ -27,7 +28,8 @@ let package = Package(
                 "Parsley",
                 "SwiftSoup",
                 "FlyingFox",
-                "CMarkExtension"
+                "CMarkExtension",
+                .product(name: "CSSParser", package: "swift-css-parser"),
             ]
         ),
         .executableTarget(

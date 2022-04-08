@@ -2,7 +2,7 @@ import SwiftSoup
 import Foundation
 
 public struct HeadingIDPlugin: Plugin {
-    public static var name = "HeadingIDs"
+    public static var name = "heading_ids"
 
     public init() {}
 

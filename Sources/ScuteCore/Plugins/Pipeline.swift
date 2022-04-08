@@ -3,12 +3,13 @@ import Foundation
 public enum PipelineError: LocalizedError {
     case failedToEnumerateInputDirectory
     case failedToProcessPage(Error)
+    case failedToProcessPages(Error)
 }
 
 public struct Pipeline {
     public let configuration: Site.Configuration
 
-    private var plugins: [(_ outputDirectory: URL) throws -> ((inout Page) throws -> Void)] = []
+    private var pluginInitializers: [(_ outputDirectory: URL) throws -> AnyPlugin] = []
 
     public init(_ configuration: Site.Configuration) {
         self.configuration = configuration
@@ -24,7 +25,7 @@ public struct Pipeline {
         try FileManager.default.createDirectory(at: configuration.outputDirectory.appendingPathComponent("css"), withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: configuration.outputDirectory.appendingPathComponent("js"), withIntermediateDirectories: true)
 
-        let processors = try plugins.map { try $0(configuration.outputDirectory) }
+        let plugins = try pluginInitializers.map { try $0(configuration.outputDirectory) }
 
         // Enumerate the input directory
         guard let enumerator = FileManager.default.enumerator(atPath: configuration.inputDirectory.path) else {
@@ -33,6 +34,7 @@ public struct Pipeline {
         }
 
         // Build all input files
+        var pages: [(page: Page, outputFile: URL)] = []
         for case let relativePath as String in enumerator {
             let inputFile = configuration.inputDirectory.appendingPathComponent(relativePath)
             let outputFile = configuration.outputDirectory.appendingPathComponent(relativePath)
@@ -51,19 +53,24 @@ public struct Pipeline {
             // If its a file, render it if it's markdown, otherwise just copy it
             if inputFile.pathExtension == "md" {
                 let outputFile = outputFile.deletingPathExtension().appendingPathExtension("html")
-
-                var page = try Page.fromMarkdownFile(at: inputFile, forSite: configuration)
-                try process(&page, processors: processors)
-
-                let html = try page.toHTML()
-                try html.write(
-                    to: outputFile,
-                    atomically: true,
-                    encoding: .utf8
-                )
+                let page = try Page.fromMarkdownFile(at: inputFile, forSite: configuration)
+                pages.append((page: page, outputFile: outputFile))
             } else {
                 try FileManager.default.copyItem(at: inputFile, to: outputFile)
             }
+        }
+
+        // Post-process the pages and output them to disk
+        var postProcessedPages = pages.map(\.page)
+        try process(&postProcessedPages, with: plugins)
+        let outputFiles = pages.map(\.outputFile)
+        for (page, outputFile) in zip(postProcessedPages, outputFiles) {
+            let html = try page.toHTML()
+            try html.write(
+                to: outputFile,
+                atomically: true,
+                encoding: .utf8
+            )
         }
 
         let elapsed = String(format: "%.02fms", (CFAbsoluteTimeGetCurrent() - start) * 1000)
@@ -71,20 +78,32 @@ public struct Pipeline {
     }
 
     public mutating func append<T: Plugin>(_ plugin: T) throws {
-        plugins.append { (outputDirectory: URL) throws -> ((inout Page) throws -> Void) in
+        pluginInitializers.append { (outputDirectory: URL) throws -> AnyPlugin in
             let context = try plugin.setup(in: outputDirectory)
-            return { (page: inout Page) throws in
-                try plugin.process(&page, context)
+            return plugin.toAnyPlugin(context)
+        }
+    }
+
+    private func process(_ page: inout Page, with plugins: [AnyPlugin]) throws {
+        for plugin in plugins {
+            do {
+                try plugin.processPage(&page)
+            } catch {
+                throw PipelineError.failedToProcessPage(error)
             }
         }
     }
 
-    private func process(_ page: inout Page, processors: [(inout Page) throws -> Void]) throws {
-        for processor in processors {
+    private func process(_ pages: inout [Page], with plugins: [AnyPlugin]) throws {
+        for plugin in plugins {
+            for i in 0..<pages.count {
+                try plugin.processPage(&pages[i])
+            }
+            
             do {
-                try processor(&page)
+                try plugin.processPages(&pages, configuration)
             } catch {
-                throw PipelineError.failedToProcessPage(error)
+                throw PipelineError.failedToProcessPages(error)
             }
         }
     }

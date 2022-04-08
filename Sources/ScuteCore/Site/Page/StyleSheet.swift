@@ -1,6 +1,6 @@
 import Foundation
 
-public enum StyleSheet {
+public enum StyleSheet: Equatable, Hashable {
     case external(url: URL)
     case selfHosted(path: String)
     case inline(content: String)
