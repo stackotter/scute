@@ -75,26 +75,35 @@ public struct TableOfContentsModule: Module {
 
         // Convert the headings to a list of links with indentation
         var html = ""
-        // Subtract 1 so that the root list gets created
-        var previousLevel = minimumLevel - 1
-        for (heading, id, level) in tableOfContents {
-            // The indent relative to the previous dot point
-            let relativeIndent = level - previousLevel
-
-            // Increase or decrease the indentation level to match the heading level
-            if relativeIndent > 0 {
-                html += String(repeating: "<ul>", count: relativeIndent)
-            } else if relativeIndent < 0 {
-                html += String(repeating: "</ul>", count: -relativeIndent)
+        for (index, (heading, id, level)) in tableOfContents.enumerated() {
+            if index == 0 {
+                let startingIndent = level - minimumLevel + 1
+                html += Array(repeating: "<ul>", count: startingIndent).joined(separator: "<li>")
             }
+
+            // Open the list item
+            html += "<li>"
 
             // Only create a link if the heading has an id
             if let id = id {
-                html += "<li><a href=\"#\(id)\">\(heading)</a></li>"
+                html += "<a href=\"#\(id)\">\(heading)</a>"
             } else {
-                html += "<li>\(heading)</li>"
+                html += "\(heading)"
             }
-            previousLevel = level
+
+            // Close the list item if the next item's level isn't higher
+            let nextIndex = index + 1
+            let nextLevel = nextIndex < tableOfContents.count ? tableOfContents[nextIndex].level : minimumLevel
+            switch nextLevel {
+                case level:
+                    html += "</li>"
+                case ..<level:
+                    html += "</li>" + Array(repeating: "</ul></li>", count: level - nextLevel).joined(separator: "")
+                case (level + 1)...:
+                    html += Array(repeating: "<ul>", count: nextLevel - level).joined(separator: "<li>")
+                default:
+                    assertionFailure("Switch over next level was not exhaustive")
+            }
         }
 
         // Update the element
