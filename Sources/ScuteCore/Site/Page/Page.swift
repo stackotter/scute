@@ -26,16 +26,16 @@ public struct Page {
 
     private static let templateParser = Parse {
         Many {
-            Prefix { $0 != "{" }.map(String.init)
+            Prefix<Substring> { $0 != "{" }.map(String.init)
             "{"
-            Prefix { $0 != "}" }.map(String.init)
+            Prefix<Substring> { $0 != "}" }.map(String.init)
             "}"
         }.map { parts in
-            parts.map { (content, variable) in
+            parts.map { content, variable in
                 (content: content, variable: variable)
             }
         }
-        Rest().map(String.init)
+        Rest<Substring>().map(String.init)
     }
 
     public static func fromMarkdownFile(at file: URL, forSite site: Site.Configuration) throws -> Page {

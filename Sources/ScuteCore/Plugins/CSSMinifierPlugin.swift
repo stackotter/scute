@@ -125,13 +125,13 @@ public struct CSSMinifierPlugin: Plugin {
 
     // Given a string such as ' , h1' this should return ',', and given a string such as '  h1' this should return ' '
     static let selectorSeparatorParser = Parse {
-        Whitespace()
+        Whitespace<Substring, _>()
         Optionally {
-            Parse(",") { "," }
+            Parse<Parsers.Map<String, String>>(",") { "," }
         }.map { $0 ?? " " }
-        Whitespace()
-    }.map { _, separator, _ in
-        separator
+        Whitespace<Substring, _>()
+    }.map { (_, separator: String, _) -> String in
+        return separator
     }
 
     // Parses a selector's prefix if any
@@ -140,7 +140,9 @@ public struct CSSMinifierPlugin: Plugin {
             Parse("#") { "#" }
             Parse(".") { "." }
         }
-    }.map { $0 ?? "" }
+    }.map { (separator: String?) -> String in
+        separator ?? ""
+    }
 
     // Given a string such as ".content::before, h1", this should extract ".content," and advance the reader to the first character of h1
     static let selectorCleaningParser = Parse {
@@ -149,7 +151,7 @@ public struct CSSMinifierPlugin: Plugin {
 
         // Read the selector and stop before any pseudo-selectors
         OneOf {
-            Prefix(1...) { (character: Character) -> Bool in
+            Prefix<Substring>(1...) { (character: Character) -> Bool in
                 let singleCharacterSet = CharacterSet(charactersIn: String(character))
                 return selectorCharacters.isSuperset(of: singleCharacterSet)
             }.map(String.init)
@@ -164,25 +166,25 @@ public struct CSSMinifierPlugin: Plugin {
         // Skip all characters up to the next comma, whitespace or the end of the input
         OneOf {
             Parse {
-                Prefix { (character: Character) -> Bool in
+                Prefix<Substring> { (character: Character) -> Bool in
                     let singleCharacterSet = CharacterSet(charactersIn: String(character))
                     return !commaAndWhitespaces.isSuperset(of: singleCharacterSet)
                 }.map(String.init)
 
                 // Get the separator between this selector and the next (either "," or " "). Returns " " if this is the last selector in the query.
                 selectorSeparatorParser
-            }.map { _, separator in
+            }.map { (_: String, separator: String) in
                 separator
             }
             // If this is the last selector and isn't followed by any trailing whitespace, return "" as the separator
             Parse {
-                Rest().map { _ in
+                Rest<Substring>().map { _ -> String in
                     ""
                 }
-                End()
+                End<Substring>()
             }
         }
-    }.map { prefixCharacter, selector, separator in
+    }.map { (prefixCharacter, selector, separator) in
         // The separator is the character separating this selector from the next
         prefixCharacter + selector + separator
     }

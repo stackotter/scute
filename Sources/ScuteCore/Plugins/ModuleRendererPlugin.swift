@@ -13,14 +13,14 @@ public struct ModuleRendererPlugin: Plugin {
     public static let moduleParser = Parse {
         OneOf {
             Parse {
-                Prefix { $0 != "{" }
+                Prefix<Substring> { $0 != "{" }
                     .map(String.init)
                 Rest<Substring>()
                     .map(String.init)
                     .map(Optional.some)
             }
             
-            Rest().map { name in
+            Rest<Substring>().map { name in
                 (String(name), Optional<String>.none)
             }
         }
