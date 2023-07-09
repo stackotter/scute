@@ -9,17 +9,6 @@ public enum PageError: LocalizedError {
 }
 
 public struct Page {
-    public static let defaultTemplate = """
-<html>
-<head>
-    <title>{title}</title>
-</head>
-<body>
-    <div>{content}</div>
-</body>
-</html>
-"""
-
     public var stylesheets: [Stylesheet]
     public var scripts: [Script]
     public var content: Element
@@ -38,17 +27,15 @@ public struct Page {
         Rest<Substring>().map(String.init)
     }
 
-    public static func fromMarkdownFile(at file: URL, forSite site: Site.Configuration) throws -> Page {
+    public static func fromMarkdownFile(
+        at file: URL,
+        forSite site: Site.Configuration
+    ) throws -> Page {
         let markdown = try String(contentsOf: file)
         let document = try Markdown.document(from: markdown)
 
-        // Load the contents of the template to use (a default template is used if no template was specified
-        var templateContents: String
-        if let template = site.templateFile {
-            templateContents = try String(contentsOf: template)
-        } else {
-            templateContents = Self.defaultTemplate
-        }
+        // Load the contents of the template to use
+        let templateContents = try String(contentsOf: site.templateFile)
 
         // The title for the page tab
         let title = (document.title.map({ "\($0) - " }) ?? "") + site.name
@@ -66,12 +53,13 @@ public struct Page {
 
         // The value to substitute for each variable
         let templateVariables: [String: String] = [
+            "site_name": site.name,
             "title": title,
             "description": description,
             "content": """
-\(document.title.map({ "<h1>\($0)</h1>" }) ?? "")
-\(document.body)
-"""
+            \(document.title.map({ "<h1>\($0)</h1>" }) ?? "")
+            \(document.body)
+            """,
         ]
 
         // Parse the template and perform variable substitution
@@ -88,7 +76,8 @@ public struct Page {
 
         let parsedHTML = try SwiftSoup.parse(html)
 
-        return Page(stylesheets: [.selfHosted(path: "/css/page.css")], scripts: [], content: parsedHTML)
+        return Page(
+            stylesheets: [.selfHosted(path: "/css/page.css")], scripts: [], content: parsedHTML)
     }
 
     func toHTML() throws -> String {

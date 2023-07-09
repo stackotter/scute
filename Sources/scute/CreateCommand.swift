@@ -51,11 +51,30 @@ struct CreateCommand: ParsableCommand {
             )
             let pageCSSFile = cssDirectory.appendingPathComponent("page.css")
             try SkeletonProject.pageCSS.write(
-                to: pageCSSFile, atomically: false, encoding: .utf8)
+                to: pageCSSFile, atomically: false, encoding: .utf8
+            )
 
             // Create index.md
             let indexFile = inputDirectory.appendingPathComponent("index.md")
-            try SkeletonProject.indexMD.write(to: indexFile, atomically: false, encoding: .utf8)
+            try SkeletonProject.index.write(to: indexFile, atomically: false, encoding: .utf8)
+
+            // Create contact.md
+            let contactFile = inputDirectory.appendingPathComponent("contact.md")
+            try SkeletonProject.contact.write(to: contactFile, atomically: false, encoding: .utf8)
+
+            // Create blog/index.md
+            let blogDirectory = inputDirectory.appendingPathComponent("blog")
+            try FileManager.default.createDirectory(
+                at: blogDirectory, withIntermediateDirectories: true
+            )
+            let blogIndexFile = blogDirectory.appendingPathComponent("index.md")
+            try SkeletonProject.blog.write(to: blogIndexFile, atomically: false, encoding: .utf8)
+
+            // Create blog/first-post.md
+            let firstBlogPostFile = blogDirectory.appendingPathComponent("first-post.md")
+            try SkeletonProject.firstPost(date: Date.now).write(
+                to: firstBlogPostFile, atomically: false, encoding: .utf8
+            )
         } catch {
             // Attempt to clean up on error
             try? FileManager.default.removeItem(at: directory)

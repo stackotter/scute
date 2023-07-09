@@ -29,8 +29,9 @@ public struct Site {
         // Rebuild site when any input files change
         print("Watching file system for changes")
         let pathsToWatch = [
-            configuration.inputDirectory.path, configuration.templateFile?.path,
-        ].compactMap { $0 }
+            configuration.inputDirectory.path,
+            configuration.templateFile.path,
+        ]
         try FileSystemWatcher.startWatchingForDebouncedModifications(
             paths: pathsToWatch,
             with: {
