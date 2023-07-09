@@ -1,5 +1,6 @@
 // This is a modified and cleaned up version of eonil's FSEvents package. All credit goes to eonil: https://github.com/eonil/FSEvents/
 
+#if canImport(CoreServices)
 import Foundation
 import CoreServices
 
@@ -347,3 +348,4 @@ extension FileSystemWatcher {
         }
     }
 }
+#endif

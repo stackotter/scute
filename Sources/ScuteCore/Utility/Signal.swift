@@ -1,6 +1,6 @@
 // Modified from: https://gist.github.com/sharplet/d640eea5b6c99605ac79
 
-#if os(macOS)
+#if canImport(Darwin)
 import Darwin
 
 /// A signal action, typealiased to avoid confusion with the `sigaction` function.

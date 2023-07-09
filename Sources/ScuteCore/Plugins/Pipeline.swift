@@ -1,4 +1,5 @@
 import Foundation
+import CoreFoundation
 
 public enum PipelineError: LocalizedError {
     case failedToEnumerateInputDirectory
