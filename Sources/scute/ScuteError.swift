@@ -6,6 +6,8 @@ enum ScuteError: LocalizedError {
     case missingInputDirectory(String)
     case missingOutputDirectory(String)
     case missingTemplateFile(String)
+    case newProjectDirectoryAlreadyExists(String)
+    case failedToWriteConfigurationToFile(URL, Error)
 
     var errorDescription: String? {
         // TODO: Incorporate relative file/directory paths into config file error messages
@@ -20,6 +22,10 @@ enum ScuteError: LocalizedError {
                 return "Missing output directory at '\(path)'"
             case .missingTemplateFile(let path):
                 return "Missing template file at '\(path)'"
+            case .newProjectDirectoryAlreadyExists(let path):
+                return "Directory already exists at '\(path)'"
+            case .failedToWriteConfigurationToFile(_, let error):
+                return "Failed to write configuration to file: \(error)"
         }
     }
 }

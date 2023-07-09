@@ -26,7 +26,7 @@ struct Configuration: Codable {
         case templateFilePath = "page_template"
     }
 
-    func `default`(usingName name: String) -> Configuration {
+    static func `default`(usingName name: String) -> Configuration {
         Configuration(
             configVersion: Self.currentConfigVersion,
             name: name,
@@ -34,6 +34,36 @@ struct Configuration: Codable {
             outputDirectoryPath: nil,
             templateFilePath: nil
         )
+    }
+
+    static func load(from file: URL) throws -> Configuration {
+        if !FileManager.default.fileExists(atPath: file.path) {
+            throw ScuteError.missingConfigurationFile(file)
+        }
+
+        do {
+            let contents = try String(contentsOf: file)
+            return try TOMLDecoder(strictDecoding: true).decode(Configuration.self, from: contents)
+        } catch {
+            throw ScuteError.failedToLoadConfiguration(error)
+        }
+    }
+
+    static func load(fromDirectory directory: URL) throws -> Configuration {
+        try load(from: directory.appendingPathComponent(defaultConfigurationFilePath))
+    }
+
+    func write(to file: URL) throws {
+        do {
+            let toml = try TOMLEncoder().encode(self)
+            try toml.write(to: file, atomically: false, encoding: .utf8)
+        } catch {
+            throw ScuteError.failedToWriteConfigurationToFile(file, error)
+        }
+    }
+
+    func write(toDirectory directory: URL) throws {
+        try write(to: directory.appendingPathComponent(Self.defaultConfigurationFilePath))
     }
 
     func inputDirectory(usingBase base: URL) -> URL {
@@ -70,31 +100,9 @@ struct Configuration: Codable {
                 inputDirectoryPath ?? Self.defaultInputDirectoryPath)
         }
 
-        guard outputDirectory(usingBase: directory).isExistingDirectory else {
-            throw ScuteError.missingOutputDirectory(
-                outputDirectoryPath ?? Self.defaultOutputDirectoryPath)
-        }
-
         guard templateFile(usingBase: directory).isExistingFile else {
             throw ScuteError.missingTemplateFile(
                 templateFilePath ?? Self.defaultTemplateFilePath)
         }
-    }
-
-    static func load(from file: URL) throws -> Configuration {
-        if !FileManager.default.fileExists(atPath: file.path) {
-            throw ScuteError.missingConfigurationFile(file)
-        }
-
-        do {
-            let contents = try String(contentsOf: file)
-            return try TOMLDecoder(strictDecoding: true).decode(Configuration.self, from: contents)
-        } catch {
-            throw ScuteError.failedToLoadConfiguration(error)
-        }
-    }
-
-    static func load(fromDirectory directory: URL) throws -> Configuration {
-        try load(from: directory.appendingPathComponent(defaultConfigurationFilePath))
     }
 }
