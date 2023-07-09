@@ -9,32 +9,17 @@ struct BuildCommand: ParsableCommand {
     )
 
     @Option(
-        name: [.customShort("i"), .customLong("in")],
-        help: "The directory containing the site's sources.",
+        name: .shortAndLong,
+        help: "The root directory of the scute project to preview.",
         transform: URL.init(fileURLWithPath:))
-    var inputDirectory: URL
-
-    @Option(
-        name: [.customShort("o"), .customLong("out")],
-        help: "The directory to output the built site to.",
-        transform: URL.init(fileURLWithPath:))
-    var outputDirectory: URL
-
-    @Option(
-        name: [.customShort("t"), .customLong("page-template")],
-        help: "The template to use for rendering pages",
-        transform: URL.init(fileURLWithPath:))
-    var templateFile: URL
+    var directory: URL?
 
     func run() throws {
-        let configuration = Site.Configuration(
-            name: "stackotter",
-            inputDirectory: inputDirectory,
-            outputDirectory: outputDirectory,
-            templateFile: templateFile
-        )
+        let directory = directory.orCWD
+        let configuration = try Configuration.load(fromDirectory: directory)
+        try configuration.validate(with: directory)
 
-        var site = Site(configuration)
+        var site = configuration.toSite(with: directory)
         do {
             print("Building site")
             try site.addDefaultPlugins()

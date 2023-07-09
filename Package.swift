@@ -17,6 +17,7 @@ let package = Package(
         .package(url: "https://github.com/loopwerk/Parsley", from: "0.9.0"),
         .package(url: "https://github.com/scinfu/SwiftSoup", from: "2.3.8"),
         .package(url: "https://github.com/swhitty/FlyingFox", from: "0.6.0"),
+        .package(url: "https://github.com/LebJe/TOMLKit", from: "0.5.5"),
     ],
     targets: [
         .target(
@@ -30,25 +31,26 @@ let package = Package(
                 "SwiftSoup",
                 "FlyingFox",
                 "CMarkExtension",
+                "TOMLKit",
             ]
         ),
         .executableTarget(
             name: "scute",
             dependencies: [
-                "ScuteCore",
+                "ScuteCore"
             ]
         ),
         .target(
             name: "CMarkExtension",
             dependencies: [
-                .product(name: "CMarkGFM", package: "swift-cmark-gfm"),
+                .product(name: "CMarkGFM", package: "swift-cmark-gfm")
             ],
             publicHeadersPath: "."
         ),
         .testTarget(
             name: "ScuteCoreTests",
             dependencies: [
-                "ScuteCore",
+                "ScuteCore"
             ]
         ),
     ]
