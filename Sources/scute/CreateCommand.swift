@@ -17,6 +17,9 @@ struct CreateCommand: ParsableCommand {
         transform: URL.init(fileURLWithPath:))
     var directory: URL?
 
+    @Flag(help: "Creates a vercel.json with the configuration required to host with vercel.")
+    var vercel = false
+
     func run() throws {
         let directory = directory ?? URL(fileURLWithPath: name)
         guard !directory.isExistingDirectory else {
@@ -75,6 +78,14 @@ struct CreateCommand: ParsableCommand {
             try SkeletonProject.firstPost(date: Date.now).write(
                 to: firstBlogPostFile, atomically: false, encoding: .utf8
             )
+
+            // If the user wants, create a vercel configuration file
+            if vercel {
+                let vercelJSONFile = directory.appendingPathComponent("vercel.json")
+                try SkeletonProject.vercelJSON.write(
+                    to: vercelJSONFile, atomically: false, encoding: .utf8
+                )
+            }
         } catch {
             // Attempt to clean up on error
             try? FileManager.default.removeItem(at: directory)

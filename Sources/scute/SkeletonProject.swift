@@ -36,6 +36,7 @@ enum SkeletonProject {
                 </div>
             </body>
         </html>
+
         """
 
     static let pageCSS = """
@@ -231,12 +232,14 @@ enum SkeletonProject {
                 margin-bottom: 1.5rem !important;
             }
         }
+
         """
 
     static let index = """
         # Home
 
         Welcome to my new site!
+
         """
 
     static let blog = """
@@ -247,12 +250,14 @@ enum SkeletonProject {
         ## Articles
 
         @ArticleIndex{"path":"/blog","reverse":true}@
+
         """
 
     static let contact = """
         # Contact
 
         Contact me at example@example.com.
+
         """
 
     static func firstPost(date: Date) -> String {
@@ -310,6 +315,14 @@ enum SkeletonProject {
             ## Conclusion
 
             I hope you enjoyed.
+
             """
     }
+
+    static let vercelJSON = """
+        {
+            "cleanUrls": true
+        }
+
+        """
 }
