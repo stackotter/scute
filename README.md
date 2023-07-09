@@ -18,19 +18,14 @@ to further customise the site generator.
 
 ## Installation
 
-### With Mint
-
-```sh
-mint install stackotter/scute@main
-```
-
-### Manual installation (requires Swift >=5.6)
+`scute` hasn't been added to homebrew yet, and mint can't successfully install it, so for now
+it must be installed manually.
 
 ```sh
 git clone https://github.com/stackotter/scute
 cd scute
 swift build -c release
-cp .build/release/scute ./path/to/installation/location/
+sudo cp .build/release/scute /usr/local/bin
 ```
 
 ## Quickstart
