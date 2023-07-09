@@ -17,12 +17,9 @@ struct BuildCommand: ParsableCommand {
     func run() throws {
         let directory = directory.orCWD
         let configuration = try Configuration.load(fromDirectory: directory)
-        try configuration.validate(with: directory)
-
-        var site = configuration.toSite(with: directory)
         do {
             print("Building site")
-            try site.addDefaultPlugins()
+            let site = try configuration.toSite(with: directory)
             try site.build()
         } catch {
             print("Failed to preview site: \(error)")

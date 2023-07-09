@@ -9,6 +9,8 @@ struct Configuration: Codable {
     static let defaultOutputDirectoryPath = "build"
     static let defaultTemplateFilePath = defaultInputDirectoryPath + "/_template.html"
 
+    static let defaultSyntaxTheme = "atom-one-dark"
+
     static let defaultConfigurationFilePath = "Scute.toml"
 
     var configVersion: Int
@@ -17,6 +19,11 @@ struct Configuration: Codable {
     var inputDirectoryPath: String?
     var outputDirectoryPath: String?
     var templateFilePath: String?
+    var syntaxTheme: String?
+
+    var syntaxThemeOrDefault: String {
+        syntaxTheme ?? Self.defaultSyntaxTheme
+    }
 
     enum CodingKeys: String, CodingKey {
         case configVersion = "config_version"
@@ -24,6 +31,7 @@ struct Configuration: Codable {
         case inputDirectoryPath = "input"
         case outputDirectoryPath = "output"
         case templateFilePath = "page_template"
+        case syntaxTheme = "syntax_theme"
     }
 
     static func `default`(usingName name: String) -> Configuration {
@@ -32,30 +40,52 @@ struct Configuration: Codable {
             name: name,
             inputDirectoryPath: nil,
             outputDirectoryPath: nil,
-            templateFilePath: nil
+            templateFilePath: nil,
+            syntaxTheme: nil
         )
     }
 
-    static func load(from file: URL) throws -> Configuration {
+    static func load(from file: URL, inProject directory: URL) throws -> Configuration {
         if !FileManager.default.fileExists(atPath: file.path) {
             throw ScuteError.missingConfigurationFile(file)
         }
 
         do {
             let contents = try String(contentsOf: file)
-            return try TOMLDecoder(strictDecoding: true).decode(Configuration.self, from: contents)
+            let tomlTable = try TOMLTable(string: contents)
+
+            // Ensure that config version is supported
+            let version = tomlTable["config_version"]
+            guard let version = version?.int, version <= Self.currentConfigVersion else {
+                throw ScuteError.unsupportedConfigurationFileVersion(
+                    version?.tomlValue.debugDescription
+                )
+            }
+
+            let configuration = try TOMLDecoder(strictDecoding: true).decode(
+                Configuration.self, from: tomlTable
+            )
+            try configuration.validate(with: directory)
+            return configuration
         } catch {
-            throw ScuteError.failedToLoadConfiguration(error)
+            if error is ScuteError {
+                throw error
+            } else {
+                throw ScuteError.failedToLoadConfiguration(error)
+            }
         }
     }
 
     static func load(fromDirectory directory: URL) throws -> Configuration {
-        try load(from: directory.appendingPathComponent(defaultConfigurationFilePath))
+        try load(
+            from: directory.appendingPathComponent(defaultConfigurationFilePath),
+            inProject: directory
+        )
     }
 
     func write(to file: URL) throws {
         do {
-            let toml = try TOMLEncoder().encode(self)
+            let toml = try TOMLEncoder().encode(self) + "\n"
             try toml.write(to: file, atomically: false, encoding: .utf8)
         } catch {
             throw ScuteError.failedToWriteConfigurationToFile(file, error)
@@ -90,8 +120,10 @@ struct Configuration: Codable {
         )
     }
 
-    func toSite(with directory: URL) -> Site {
-        Site(toSiteConfiguration(forSiteIn: directory))
+    func toSite(with directory: URL) throws -> Site {
+        var site = Site(toSiteConfiguration(forSiteIn: directory))
+        try site.addDefaultPlugins(syntaxTheme: syntaxThemeOrDefault)
+        return site
     }
 
     func validate(with directory: URL) throws {

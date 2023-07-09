@@ -17,13 +17,11 @@ struct PreviewCommand: AsyncParsableCommand {
     func run() async throws {
         let directory = directory.orCWD
         let configuration = try Configuration.load(fromDirectory: directory)
-        try configuration.validate(with: directory)
-
-        var site = configuration.toSite(with: directory)
         do {
-            try site.addDefaultPlugins()
+            let site = try configuration.toSite(with: directory)
             try await site.preview()
         } catch {
+            // TODO: Output errors to stderr instead of stdout
             print("Failed to preview site: \(error)")
         }
     }

@@ -8,6 +8,7 @@ enum ScuteError: LocalizedError {
     case missingTemplateFile(String)
     case newProjectDirectoryAlreadyExists(String)
     case failedToWriteConfigurationToFile(URL, Error)
+    case unsupportedConfigurationFileVersion(String?)
 
     var errorDescription: String? {
         // TODO: Incorporate relative file/directory paths into config file error messages
@@ -26,6 +27,10 @@ enum ScuteError: LocalizedError {
                 return "Directory already exists at '\(path)'"
             case .failedToWriteConfigurationToFile(_, let error):
                 return "Failed to write configuration to file: \(error)"
+            case .unsupportedConfigurationFileVersion(let version):
+                let versionString = version ?? "unknown"
+                return
+                    "Maximum supported config version is '\(Configuration.currentConfigVersion)', found '\(versionString)'"
         }
     }
 }

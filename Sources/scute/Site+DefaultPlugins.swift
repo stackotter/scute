@@ -1,7 +1,7 @@
 import ScuteCore
 
 extension Site {
-    mutating func addDefaultPlugins() throws {
+    mutating func addDefaultPlugins(syntaxTheme: String) throws {
         try addPlugin(GitHubMarkdownThemePlugin(configuration: .init(theme: .light)))
         try addPlugin(HeadingIDPlugin())
         try addPlugin(
@@ -18,6 +18,6 @@ extension Site {
             )
         )
         try addPlugin(CSSMinifierPlugin())
-        try addPlugin(SyntaxHighlighterPlugin(configuration: .init(theme: "atom-one-dark")))
+        try addPlugin(SyntaxHighlighterPlugin(configuration: .init(theme: syntaxTheme)))
     }
 }
