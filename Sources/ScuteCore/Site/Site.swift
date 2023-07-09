@@ -14,7 +14,7 @@ public struct Site {
         try pipeline.buildSite()
     }
 
-    public func preview() async throws {
+    public func preview(on port: UInt16) async throws {
         // Quit the program on interrupt (the server sometimes doesn't like stopping)
         trap(
             .interrupt,
@@ -50,7 +50,7 @@ public struct Site {
             })
 
         // Host the site
-        try await Server.host(configuration.outputDirectory, onPort: 8081)
+        try await Server.host(configuration.outputDirectory, onPort: port)
     }
 
     public mutating func addPlugin<T: Plugin>(_ plugin: T) throws {
