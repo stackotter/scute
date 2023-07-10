@@ -4,7 +4,7 @@ import CoreFoundation
 public enum PipelineError: LocalizedError {
     case failedToEnumerateInputDirectory
     case failedToProcessPage(Error)
-    case failedToProcessPages(Error)
+    case failedToProcessPages(Error, plugin: String)
 }
 
 public struct Pipeline {
@@ -104,7 +104,7 @@ public struct Pipeline {
             do {
                 try plugin.processPages(&pages, configuration)
             } catch {
-                throw PipelineError.failedToProcessPages(error)
+                throw PipelineError.failedToProcessPages(error, plugin: plugin.name)
             }
         }
     }

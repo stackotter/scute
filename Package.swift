@@ -18,6 +18,9 @@ let package = Package(
         .package(url: "https://github.com/scinfu/SwiftSoup", from: "2.3.8"),
         .package(url: "https://github.com/swhitty/FlyingFox", from: "0.6.0"),
         .package(url: "https://github.com/LebJe/TOMLKit", from: "0.5.5"),
+        .package(url: "https://github.com/sersoft-gmbh/swift-inotify", from: "0.4.0"),
+        .package(url: "https://github.com/apple/swift-system.git", from: "1.2.0"),
+        .package(url: "https://github.com/apple/swift-async-algorithms.git", from: "0.1.0"),
     ],
     targets: [
         .target(
@@ -27,6 +30,9 @@ let package = Package(
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "CMarkGFM", package: "swift-cmark-gfm"),
                 .product(name: "SwiftCSSParser", package: "swift-css-parser"),
+                .product(name: "Inotify", package: "swift-inotify", condition: .when(platforms: [.linux])),
+                .product(name: "SystemPackage", package: "swift-system", condition: .when(platforms: [.linux])),
+                .product(name: "AsyncAlgorithms", package: "swift-async-algorithms", condition: .when(platforms: [.linux])),
                 "Parsley",
                 "SwiftSoup",
                 "FlyingFox",

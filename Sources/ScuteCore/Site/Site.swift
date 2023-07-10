@@ -35,29 +35,58 @@ public struct Site {
             configuration.templateFile.path,
         ]
 
-        #if canImport(CoreServices)
-        try FileSystemWatcher.startWatchingForDebouncedModifications(
-            paths: pathsToWatch,
-            with: {
-                do {
-                    print("Detected changes, rebuilding site")
-                    try build()
-                    print("Successfully rebuilt site")
-                } catch {
-                    print("Failed to rebuild site: \(error)")
-                    Foundation.exit(1)
-                }
-            },
-            errorHandler: { error in
-                print("Error processing file system event: \(error)")
-                Foundation.exit(1)
-            })
-        #else
-        print("Warning: File watching isn't implemented yet on non-Apple platforms. Rerun the preview command to rebuild.")
-        #endif
+        class Box<T> {
+            var value: T
 
-        // Host the site
-        try await Server.host(configuration.outputDirectory, onPort: port)
+            init(_ value: T) {
+                self.value = value
+            }
+        }
+
+        let waitingToRebuild = Box(false)
+        let rebuildQueue = DispatchQueue(label: "dev.stackotter.scute.rebuild")
+        let flagQueue = DispatchQueue(label: "dev.stackotter.scute.rebuild-flag")
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            // Watch file system for changes
+            group.addTask {
+                try await FileSystemWatcher.watch(
+                    paths: pathsToWatch,
+                    with: {
+                        flagQueue.sync {
+                            if waitingToRebuild.value {
+                                return
+                            } else {
+                                waitingToRebuild.value = true
+                                rebuildQueue.async {
+                                    flagQueue.sync {
+                                        waitingToRebuild.value = false
+                                    }
+                                    print("Detected changes, rebuilding site")
+                                    do {
+                                        try build()
+                                        print("Successfully rebuilt site")
+                                    } catch {
+                                        print("Failed to rebuild site: \(error)")
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    errorHandler: { error in
+                        print("Error processing file system event: \(error)")
+                        Foundation.exit(1)
+                    }
+                )
+            }
+
+            // Host the site
+            group.addTask {
+                try await Server.host(configuration.outputDirectory, onPort: port)
+            }
+
+            try await group.waitForAll()
+        }
     }
 
     public mutating func addPlugin<T: Plugin>(_ plugin: T) throws {
