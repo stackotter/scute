@@ -1,6 +1,6 @@
 # Scute - *Site Creation (u) Tool (e)*
 
-An extensible static site generator.
+An extensible static site generator. Supports macOS and Linux.
 
 ## Overview
 
