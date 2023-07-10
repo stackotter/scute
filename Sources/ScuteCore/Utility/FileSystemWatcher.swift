@@ -5,12 +5,15 @@
 #endif
 
 enum FileSystemWatcher {
-    public static func watch(paths: [String], with handler: @escaping () -> Void, errorHandler: @escaping (Swift.Error) -> Void) async throws {
+    public static func watch(
+        paths: [String], with handler: @escaping () -> Void,
+        errorHandler: @escaping (Swift.Error) -> Void
+    ) async throws {
         #if canImport(CoreServices)
             // TODO: Maybe update to use async/await?
-            try MacOSFileSystemWatcher.startWatchingForDebouncedModifications(
+            try CoreServicesFileSystemWatcher.startWatchingForDebouncedModifications(
                 paths: paths,
-                with: { _ in handler() },
+                with: handler,
                 errorHandler: errorHandler
             )
         #elseif canImport(Inotify)
@@ -24,8 +27,9 @@ enum FileSystemWatcher {
                                 for await event in stream.debounce(for: .milliseconds(0.5)) {
                                     guard
                                         !event.flags.intersection([
-                                            .fileCreated, .fileDeleted, .modified, .movedFrom, .movedTo,
-                                            .selfDeleted, .selfMoved, .writableFileClosed
+                                            .fileCreated, .fileDeleted, .modified, .movedFrom,
+                                            .movedTo,
+                                            .selfDeleted, .selfMoved, .writableFileClosed,
                                         ]).isEmpty
                                     else {
                                         continue
