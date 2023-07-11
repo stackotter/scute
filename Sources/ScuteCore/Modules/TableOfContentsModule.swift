@@ -56,15 +56,20 @@ public struct TableOfContentsModule: Module {
             // Remove emojis if configured to
             if stripEmojis {
                 text = text.unicodeScalars.filter { scalar in
-                    !scalar.properties.isEmojiPresentation && !scalar.properties.isEmoji
+                    // TODO: Figure out how to fix this filter so that the hardcoded hammer emoji check isn't required
+                    // (who knows what other emojis are also not being detected).
+                    !(scalar.properties.isEmojiPresentation && scalar.properties.isEmoji)
+                        && scalar != "🛠".unicodeScalars.first
                 }.reduce("") { $0 + String($1) }
             }
 
-            tableOfContents.append((
-                heading: text,
-                id: try? heading.attr("id"),
-                level: level
-            ))
+            tableOfContents.append(
+                (
+                    heading: text,
+                    id: try? heading.attr("id"),
+                    level: level
+                )
+            )
         }
 
         let minimumLevel = tableOfContents.map(\.level).min() ?? 1
@@ -93,14 +98,19 @@ public struct TableOfContentsModule: Module {
 
             // Close the list item if the next item's level isn't higher
             let nextIndex = index + 1
-            let nextLevel = nextIndex < tableOfContents.count ? tableOfContents[nextIndex].level : minimumLevel
+            let nextLevel =
+                nextIndex < tableOfContents.count ? tableOfContents[nextIndex].level : minimumLevel
             switch nextLevel {
                 case level:
                     html += "</li>"
                 case ..<level:
-                    html += "</li>" + Array(repeating: "</ul></li>", count: level - nextLevel).joined(separator: "")
+                    html +=
+                        "</li>"
+                        + Array(repeating: "</ul></li>", count: level - nextLevel).joined(
+                            separator: "")
                 case (level + 1)...:
-                    html += Array(repeating: "<ul>", count: nextLevel - level).joined(separator: "<li>")
+                    html += Array(repeating: "<ul>", count: nextLevel - level).joined(
+                        separator: "<li>")
                 default:
                     assertionFailure("Switch over next level was not exhaustive")
             }
