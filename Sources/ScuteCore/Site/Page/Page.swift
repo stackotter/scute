@@ -66,6 +66,10 @@ public struct Page {
         let (parts, rest) = try templateParser.parse(templateContents)
         var html = ""
         for (content, variable) in parts {
+            guard !variable.contains("\n") else {
+                continue
+            }
+
             guard let value = templateVariables[variable] else {
                 throw PageError.unknownTemplateVariable(variable)
             }
