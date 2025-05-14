@@ -65,8 +65,10 @@ public struct Page {
         // Parse the template and perform variable substitution
         let (parts, rest) = try templateParser.parse(templateContents)
         var html = ""
-        for (content, variable) in parts {
-            guard !variable.contains("\n") else {
+        for (index, (content, variable)) in parts.enumerated() {
+            let nextContent = index < parts.count - 1 ? parts[index + 1].0 : ""
+            guard !(variable.hasPrefix("{") && nextContent.hasPrefix("}")) else {
+                html += content + variable
                 continue
             }
 
