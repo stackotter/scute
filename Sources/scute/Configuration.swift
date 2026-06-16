@@ -20,6 +20,7 @@ struct Configuration: Codable {
     var outputDirectoryPath: String?
     var templateFilePath: String?
     var syntaxTheme: String?
+    var enableSyntaxTheming: Bool?
 
     var syntaxThemeOrDefault: String {
         syntaxTheme ?? Self.defaultSyntaxTheme
@@ -32,6 +33,7 @@ struct Configuration: Codable {
         case outputDirectoryPath = "output"
         case templateFilePath = "page_template"
         case syntaxTheme = "syntax_theme"
+        case enableSyntaxTheming = "enable_syntax_theming"
     }
 
     static func `default`(usingName name: String) -> Configuration {
@@ -41,7 +43,8 @@ struct Configuration: Codable {
             inputDirectoryPath: nil,
             outputDirectoryPath: nil,
             templateFilePath: nil,
-            syntaxTheme: nil
+            syntaxTheme: nil,
+            enableSyntaxTheming: true
         )
     }
 
@@ -122,7 +125,9 @@ struct Configuration: Codable {
 
     func toSite(with directory: URL) throws -> Site {
         var site = Site(toSiteConfiguration(forSiteIn: directory))
-        try site.addDefaultPlugins(syntaxTheme: syntaxThemeOrDefault)
+        try site.addDefaultPlugins(
+            syntaxTheme: enableSyntaxTheming != false ? syntaxThemeOrDefault : nil
+        )
         return site
     }
 

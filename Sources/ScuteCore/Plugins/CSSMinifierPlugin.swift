@@ -168,6 +168,26 @@ public struct CSSMinifierPlugin: Plugin {
             Parse {
                 Prefix<Substring> { (character: Character) -> Bool in
                     let singleCharacterSet = CharacterSet(charactersIn: String(character))
+                    return !commaAndWhitespaces.isSuperset(of: singleCharacterSet) && character != "("
+                }.map(String.init)
+
+                Parse("(") { "(" }
+
+                Prefix<Substring> { (character: Character) -> Bool in
+                    return character != ")"
+                }.map(String.init)
+
+                Parse(")") { ")" }
+
+                // Get the separator between this selector and the next (either "," or " "). Returns " " if this is the last selector in the query.
+                selectorSeparatorParser
+            }.map { (_: String, _: String, _: String, _: String, separator: String) in
+                separator
+            }
+
+            Parse {
+                Prefix<Substring> { (character: Character) -> Bool in
+                    let singleCharacterSet = CharacterSet(charactersIn: String(character))
                     return !commaAndWhitespaces.isSuperset(of: singleCharacterSet)
                 }.map(String.init)
 
